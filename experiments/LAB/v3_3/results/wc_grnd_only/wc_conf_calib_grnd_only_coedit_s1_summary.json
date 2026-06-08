@@ -1,0 +1,217 @@
+{
+  "dataset": "coedit",
+  "seed": 1,
+  "epochs": 20,
+  "batch": 500,
+  "protocol": "design=correct_decoupled,fsm v3+hier+decol_hier_v2+causal_batch,let0.5,p0_fix=off,bs500",
+  "arms": {
+    "wc": {
+      "n_pos": 12000,
+      "n_neg": 12000,
+      "trans_ap": 0.9964309133424254,
+      "trans_auc": 0.9966859756944444,
+      "pos_lifecycle_dist": [
+        0.0,
+        0.23691666666666666,
+        0.24175,
+        0.12733333333333333,
+        0.394
+      ],
+      "has_cc": true,
+      "c_t_stats": {
+        "mean": 0.48337879293078245,
+        "std": 0.404677497059795,
+        "min": 0.012369631789624691,
+        "max": 0.9693838953971863,
+        "p10": 0.03711763918399811,
+        "p50": 0.5218228995800018,
+        "p90": 0.9366222023963928
+      },
+      "cc_weight_stats": {
+        "mean": 0.48337879293078245,
+        "std": 0.404677497059795,
+        "min": 0.012369631789624691,
+        "max": 0.9693838953971863,
+        "frac_zero": 0.0,
+        "frac_lt_0.5": 0.49325
+      },
+      "violation_rate": 0.499,
+      "never_born_death_rate": 0.00925,
+      "AUC_lowc_predicts_violation": 0.9991567466269865,
+      "corr_lowc_violation": 0.9508076033927927,
+      "mean_c_t_violation": 0.09783803983983436,
+      "mean_c_t_coherent": 0.8673804611790521,
+      "AUC_lowc_predicts_neverbornDEATH": 0.4216154079893671,
+      "mean_c_t_neverbornDEATH": 0.6140979163617164,
+      "corr_lowc_posScore": -0.6571213813283028,
+      "corr_c_t_posScore": -0.6571213813283028,
+      "R2_c_t_free_argmax": 0.47457505815501666,
+      "corr_c_t_free_argmax": -0.6226929858636505,
+      "AUC_lowc_predicts_posMiss10": 0.1658559413580247,
+      "mean_c_t_posMiss10": 0.9257698103785514,
+      "mean_c_t_posHit": 0.4342242354365859,
+      "std_trans_ap": 0.9966114373796695,
+      "std_trans_auc": 0.9968371874999999,
+      "ind_ap": 0.971453409447837,
+      "ind_auc": 0.9694880878994536,
+      "best_val_ap": 0.9998541866243729,
+      "train_time_s": 956.2,
+      "arm": "wc",
+      "nan_check": false,
+      "leak_check_ap_eq_1": false,
+      "cc_self_consist_w": 0.0,
+      "cc_grounded_init": true,
+      "cc_w_obs_logit": null,
+      "w_obs": null,
+      "npz": "/users/PGS0407/binben14/VietHuy/Hoang/SR-GNN/experiments/LAB/v3_3/results/wc_grnd_only/s1/wc_conf_calib_coedit_wc_s1.npz",
+      "low_c_examples": [
+        {
+          "c_t": 0.0124,
+          "cc_weight": 0.0124,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.9733
+        },
+        {
+          "c_t": 0.0135,
+          "cc_weight": 0.0135,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.9815
+        },
+        {
+          "c_t": 0.0175,
+          "cc_weight": 0.0175,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.9621
+        },
+        {
+          "c_t": 0.0192,
+          "cc_weight": 0.0192,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.9805
+        },
+        {
+          "c_t": 0.0289,
+          "cc_weight": 0.0289,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.9897
+        },
+        {
+          "c_t": 0.0306,
+          "cc_weight": 0.0306,
+          "belief_argmax": "DEATH",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0316,
+          "cc_weight": 0.0316,
+          "belief_argmax": "DEATH",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0319,
+          "cc_weight": 0.0319,
+          "belief_argmax": "DEATH",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0319,
+          "cc_weight": 0.0319,
+          "belief_argmax": "DEATH",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0321,
+          "cc_weight": 0.0321,
+          "belief_argmax": "DEATH",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0322,
+          "cc_weight": 0.0322,
+          "belief_argmax": "IDLE",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 0.6584
+        },
+        {
+          "c_t": 0.0323,
+          "cc_weight": 0.0323,
+          "belief_argmax": "IDLE",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 0.7559
+        }
+      ]
+    },
+    "B": {
+      "n_pos": 12000,
+      "n_neg": 12000,
+      "trans_ap": 0.9967987672700209,
+      "trans_auc": 0.9970207395833334,
+      "pos_lifecycle_dist": [
+        0.27008333333333334,
+        0.23691666666666666,
+        0.21358333333333332,
+        0.23766666666666666,
+        0.04175
+      ],
+      "has_cc": false,
+      "std_trans_ap": 0.9968148120663489,
+      "std_trans_auc": 0.9970172986111111,
+      "ind_ap": 0.974110269281901,
+      "ind_auc": 0.9721735014239508,
+      "best_val_ap": 0.999793749101016,
+      "train_time_s": 940.3,
+      "arm": "B",
+      "nan_check": false,
+      "leak_check_ap_eq_1": false,
+      "cc_self_consist_w": 0.0,
+      "cc_grounded_init": false,
+      "cc_w_obs_logit": null,
+      "w_obs": null
+    }
+  },
+  "headline": {
+    "wc_trans_ap": 0.9964309133424254,
+    "B_trans_ap": 0.9967987672700209,
+    "delta_trans_ap_pp": -0.037,
+    "wc_ind_ap": 0.971453409447837,
+    "B_ind_ap": 0.974110269281901,
+    "delta_ind_ap_pp": -0.266,
+    "wc_AUC_lowc_violation": 0.9991567466269865,
+    "wc_AUC_lowc_posMiss10": 0.1658559413580247,
+    "wc_violation_rate": 0.499,
+    "wc_cc_self_consist_w": 0.0,
+    "wc_w_obs_converged": null,
+    "wc_cc_w_obs_logit": null,
+    "wc_pos_lifecycle_dist": [
+      0.0,
+      0.23691666666666666,
+      0.24175,
+      0.12733333333333333,
+      0.394
+    ],
+    "any_leak_ap_eq_1": false,
+    "any_nan": false
+  }
+}

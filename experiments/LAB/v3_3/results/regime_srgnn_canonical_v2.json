@@ -1,0 +1,143 @@
+{
+  "runs": [
+    {
+      "dataset": "synthetic_regime",
+      "seed": 42,
+      "epochs": 20,
+      "postcp": {
+        "overall_ap": 0.9517769621308118,
+        "n_pos": 12822,
+        "cp_w0_ap": 0.5891187460811019,
+        "perpair_w1_ap": 0.670460119873361,
+        "perpair_w2_ap": 0.7099965993357753,
+        "perpair_w5_ap": 0.7719933310600013,
+        "high_phase1_ap": 0.9469081997207814
+      },
+      "peredge_npz": "/users/PGS0407/binben14/VietHuy/Hoang/SR-GNN/experiments/LAB/v3_3/results/regime_peredge/peredge_synthetic_regime_seed42_p0off_v1.npz",
+      "p0_fix": "off",
+      "lfg": "on",
+      "echo": "off",
+      "fix_existence_init": false,
+      "entropy_reg_weight": 0.0,
+      "design": "canonical",
+      "fsm_arch": "v1",
+      "trans_ap": 0.9517769621308118,
+      "trans_auc": 0.9797753528442831,
+      "ind_ap": NaN,
+      "ind_auc": NaN,
+      "best_val_ap": 0.9927955802466052,
+      "train_time_s": 111.34400057792664,
+      "final_info": {
+        "n_edges": 1114,
+        "edge_state_dist": [
+          0.1831238716840744,
+          0.44614002108573914,
+          0.2109515219926834,
+          0.033213645219802856,
+          0.1265709102153778
+        ],
+        "ever_alive_mean": 0.8840823173522949,
+        "hawkes_lam_mean": 1.2578908205032349
+      },
+      "het_traj": []
+    },
+    {
+      "dataset": "synthetic_regime",
+      "seed": 123,
+      "epochs": 20,
+      "postcp": {
+        "overall_ap": 0.8043597787829719,
+        "n_pos": 12822,
+        "cp_w0_ap": 0.5690777268609053,
+        "perpair_w1_ap": 0.5342043699791507,
+        "perpair_w2_ap": 0.5110121914124032,
+        "perpair_w5_ap": 0.5003388064100552,
+        "high_phase1_ap": 0.7874421569594406
+      },
+      "peredge_npz": "/users/PGS0407/binben14/VietHuy/Hoang/SR-GNN/experiments/LAB/v3_3/results/regime_peredge/peredge_synthetic_regime_seed123_p0off_v1.npz",
+      "p0_fix": "off",
+      "lfg": "on",
+      "echo": "off",
+      "fix_existence_init": false,
+      "entropy_reg_weight": 0.0,
+      "design": "canonical",
+      "fsm_arch": "v1",
+      "trans_ap": 0.8043597787829719,
+      "trans_auc": 0.8499589096799073,
+      "ind_ap": NaN,
+      "ind_auc": NaN,
+      "best_val_ap": 0.7587707566293495,
+      "train_time_s": 111.46344709396362,
+      "final_info": {
+        "n_edges": 1114,
+        "edge_state_dist": [
+          0.795332133769989,
+          0.054757628589868546,
+          0.10861759632825851,
+          0.011669659055769444,
+          0.02962297946214676
+        ],
+        "ever_alive_mean": 0.5976563692092896,
+        "hawkes_lam_mean": 1.2595893144607544
+      },
+      "het_traj": []
+    },
+    {
+      "dataset": "synthetic_regime",
+      "seed": 7,
+      "epochs": 20,
+      "postcp": {
+        "overall_ap": 0.9512725923761541,
+        "n_pos": 12822,
+        "cp_w0_ap": 0.45989160144468294,
+        "perpair_w1_ap": 0.5793046405933477,
+        "perpair_w2_ap": 0.6433936801015049,
+        "perpair_w5_ap": 0.7374711895689654,
+        "high_phase1_ap": 0.9468017775606884
+      },
+      "peredge_npz": "/users/PGS0407/binben14/VietHuy/Hoang/SR-GNN/experiments/LAB/v3_3/results/regime_peredge/peredge_synthetic_regime_seed7_p0off_v1.npz",
+      "p0_fix": "off",
+      "lfg": "on",
+      "echo": "off",
+      "fix_existence_init": false,
+      "entropy_reg_weight": 0.0,
+      "design": "canonical",
+      "fsm_arch": "v1",
+      "trans_ap": 0.9512725923761541,
+      "trans_auc": 0.9833505586164357,
+      "ind_ap": NaN,
+      "ind_auc": NaN,
+      "best_val_ap": 0.9999855945980206,
+      "train_time_s": 111.21681261062622,
+      "final_info": {
+        "n_edges": 1114,
+        "edge_state_dist": [
+          0.3797127604484558,
+          0.21184919774532318,
+          0.11938958615064621,
+          0.2217235118150711,
+          0.06732495874166489
+        ],
+        "ever_alive_mean": 0.9104376435279846,
+        "hawkes_lam_mean": 1.258984088897705
+      },
+      "het_traj": []
+    }
+  ],
+  "summary": [
+    {
+      "dataset": "synthetic_regime",
+      "p0_fix": "off",
+      "trans_ap_mean": 0.9024697777633127,
+      "trans_ap_std": 0.06937455115604563,
+      "trans_auc_mean": 0.9376949403802087,
+      "trans_auc_std": 0.06205590939554149,
+      "ind_ap_mean": NaN,
+      "ind_ap_std": NaN,
+      "ind_auc_mean": NaN,
+      "ind_auc_std": NaN,
+      "time_mean": 111.34142009417216,
+      "n_seeds": 3
+    }
+  ]
+}

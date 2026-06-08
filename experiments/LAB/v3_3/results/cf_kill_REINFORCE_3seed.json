@@ -1,0 +1,58 @@
+{
+ "intervention": "REINFORCE-decoded recurring pairs (true_occ>=2); offline HierV2SCM on config-B cbON npz",
+ "note": "closes seed-42-only do(rate=dead)/do(stale)/kill items as 3-seed; superseded the non-reproducing 83-86%/100% s42 dumps",
+ "per_seed": {
+  "42": {
+   "n_REINFORCE": 3190,
+   "do_rate_dead_DEATH": 0.5739811912225705,
+   "do_stale_high_DEATH": 0.47648902821316613,
+   "do_all_dead_DEATH": 1.0
+  },
+  "1": {
+   "n_REINFORCE": 3205,
+   "do_rate_dead_DEATH": 0.5881435257410297,
+   "do_stale_high_DEATH": 0.4789391575663027,
+   "do_all_dead_DEATH": 1.0
+  },
+  "7": {
+   "n_REINFORCE": 3267,
+   "do_rate_dead_DEATH": 0.6287113559840832,
+   "do_stale_high_DEATH": 0.48943985307621674,
+   "do_all_dead_DEATH": 0.9969390878481788
+  }
+ },
+ "npz": {
+  "42": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s42_cbON.npz",
+  "1": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s1_cbON.npz",
+  "7": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s7_cbON.npz"
+ },
+ "summary": {
+  "rate": {
+   "mean": 0.5969453576492278,
+   "std": 0.028406899116424394,
+   "per_seed": [
+    0.574,
+    0.5881,
+    0.6287
+   ]
+  },
+  "stale": {
+   "mean": 0.48162267961856187,
+   "std": 0.006879820790694578,
+   "per_seed": [
+    0.4765,
+    0.4789,
+    0.4894
+   ]
+  },
+  "combo": {
+   "mean": 0.998979695949393,
+   "std": 0.0017672184548197948,
+   "per_seed": [
+    1.0,
+    1.0,
+    0.9969
+   ]
+  }
+ }
+}

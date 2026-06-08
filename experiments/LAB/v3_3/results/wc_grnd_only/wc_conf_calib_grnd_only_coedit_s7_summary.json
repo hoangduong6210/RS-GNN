@@ -1,0 +1,217 @@
+{
+  "dataset": "coedit",
+  "seed": 7,
+  "epochs": 20,
+  "batch": 500,
+  "protocol": "design=correct_decoupled,fsm v3+hier+decol_hier_v2+causal_batch,let0.5,p0_fix=off,bs500",
+  "arms": {
+    "wc": {
+      "n_pos": 12000,
+      "n_neg": 12000,
+      "trans_ap": 0.9976583995120715,
+      "trans_auc": 0.9978155069444444,
+      "pos_lifecycle_dist": [
+        0.0,
+        0.23691666666666666,
+        0.2435,
+        0.1395,
+        0.38008333333333333
+      ],
+      "has_cc": true,
+      "c_t_stats": {
+        "mean": 0.6922625390569834,
+        "std": 0.2789720730807297,
+        "min": 0.01377352699637413,
+        "max": 0.9871450662612915,
+        "p10": 0.4428667902946472,
+        "p50": 0.6583355069160461,
+        "p90": 0.987128084897995
+      },
+      "cc_weight_stats": {
+        "mean": 0.6922625390569834,
+        "std": 0.2789720730807297,
+        "min": 0.01377352699637413,
+        "max": 0.9871450662612915,
+        "frac_zero": 0.0,
+        "frac_lt_0.5": 0.28691666666666665
+      },
+      "violation_rate": 0.3585833333333333,
+      "never_born_death_rate": 0.05683333333333333,
+      "AUC_lowc_predicts_violation": 0.9984980461012438,
+      "corr_lowc_violation": 0.8276295510698936,
+      "mean_c_t_violation": 0.38346645161366666,
+      "mean_c_t_coherent": 0.8648946768078725,
+      "AUC_lowc_predicts_neverbornDEATH": 0.3641660392005261,
+      "mean_c_t_neverbornDEATH": 0.8551296268253863,
+      "corr_lowc_posScore": -0.42718300893013494,
+      "corr_c_t_posScore": -0.42718300893013506,
+      "R2_c_t_free_argmax": 0.2276105200531151,
+      "corr_c_t_free_argmax": -0.46424914576148407,
+      "AUC_lowc_predicts_posMiss10": 0.01628858024691358,
+      "mean_c_t_posMiss10": 0.9819480001740157,
+      "mean_c_t_posHit": 0.6600752655995354,
+      "std_trans_ap": 0.9976611176784043,
+      "std_trans_auc": 0.9978233263888888,
+      "ind_ap": 0.9866211621179319,
+      "ind_auc": 0.9868565003011989,
+      "best_val_ap": 0.9997886089400335,
+      "train_time_s": 961.3,
+      "arm": "wc",
+      "nan_check": false,
+      "leak_check_ap_eq_1": false,
+      "cc_self_consist_w": 0.0,
+      "cc_grounded_init": true,
+      "cc_w_obs_logit": null,
+      "w_obs": null,
+      "npz": "/users/PGS0407/binben14/VietHuy/Hoang/SR-GNN/experiments/LAB/v3_3/results/wc_grnd_only/s7/wc_conf_calib_coedit_wc_s7.npz",
+      "low_c_examples": [
+        {
+          "c_t": 0.0138,
+          "cc_weight": 0.0138,
+          "belief_argmax": "IDLE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.7526
+        },
+        {
+          "c_t": 0.0143,
+          "cc_weight": 0.0143,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.015,
+          "cc_weight": 0.015,
+          "belief_argmax": "IDLE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.6853
+        },
+        {
+          "c_t": 0.0159,
+          "cc_weight": 0.0159,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.024,
+          "cc_weight": 0.024,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0264,
+          "cc_weight": 0.0264,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0265,
+          "cc_weight": 0.0265,
+          "belief_argmax": "IDLE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 0.769
+        },
+        {
+          "c_t": 0.0303,
+          "cc_weight": 0.0303,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0304,
+          "cc_weight": 0.0304,
+          "belief_argmax": "IDLE",
+          "free_next_state": "DEATH",
+          "reachable": false,
+          "pos_sigmoid": 0.7744
+        },
+        {
+          "c_t": 0.0308,
+          "cc_weight": 0.0308,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0311,
+          "cc_weight": 0.0311,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "REINFORCE",
+          "reachable": false,
+          "pos_sigmoid": 1.0
+        },
+        {
+          "c_t": 0.0311,
+          "cc_weight": 0.0311,
+          "belief_argmax": "REINFORCE",
+          "free_next_state": "DECAY",
+          "reachable": false,
+          "pos_sigmoid": 0.8014
+        }
+      ]
+    },
+    "B": {
+      "n_pos": 12000,
+      "n_neg": 12000,
+      "trans_ap": 0.9975519085050311,
+      "trans_auc": 0.9977218333333333,
+      "pos_lifecycle_dist": [
+        0.00375,
+        0.23691666666666666,
+        0.24641666666666667,
+        0.45958333333333334,
+        0.05333333333333334
+      ],
+      "has_cc": false,
+      "std_trans_ap": 0.9976052898029544,
+      "std_trans_auc": 0.9977780694444445,
+      "ind_ap": 0.9864431475233779,
+      "ind_auc": 0.9867015986009993,
+      "best_val_ap": 0.9996909648406596,
+      "train_time_s": 945.5,
+      "arm": "B",
+      "nan_check": false,
+      "leak_check_ap_eq_1": false,
+      "cc_self_consist_w": 0.0,
+      "cc_grounded_init": false,
+      "cc_w_obs_logit": null,
+      "w_obs": null
+    }
+  },
+  "headline": {
+    "wc_trans_ap": 0.9976583995120715,
+    "B_trans_ap": 0.9975519085050311,
+    "delta_trans_ap_pp": 0.011,
+    "wc_ind_ap": 0.9866211621179319,
+    "B_ind_ap": 0.9864431475233779,
+    "delta_ind_ap_pp": 0.018,
+    "wc_AUC_lowc_violation": 0.9984980461012438,
+    "wc_AUC_lowc_posMiss10": 0.01628858024691358,
+    "wc_violation_rate": 0.3585833333333333,
+    "wc_cc_self_consist_w": 0.0,
+    "wc_w_obs_converged": null,
+    "wc_cc_w_obs_logit": null,
+    "wc_pos_lifecycle_dist": [
+      0.0,
+      0.23691666666666666,
+      0.2435,
+      0.1395,
+      0.38008333333333333
+    ],
+    "any_leak_ap_eq_1": false,
+    "any_nan": false
+  }
+}

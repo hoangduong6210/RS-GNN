@@ -1,0 +1,26 @@
+# Large datasets / caches (never commit)
+*.npz
+*.arrow
+*.parquet
+*.pt
+*.pth
+*.pkl
+*.h5
+*.ckpt
+*.bin
+**/experiments/data/
+**/src/experiments/data/
+
+# Internal / context / communication (keep repo clean)
+.claude/
+team/
+**/CLAUDE.md
+**/communicate_*.md
+**/Communicate_*.md
+Master_ML.md
+Master File/
+**/backup_*/
+*_tmp*.py
+*.log
+__pycache__/
+*.py[cod]
