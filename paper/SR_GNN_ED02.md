@@ -109,7 +109,7 @@ These four terms sum to one by construction, with $P(\text{IDLE})$ carrying the 
 
 Each gate is $\sigma(\text{analytic prior} + \text{small learnable residual})$, zero-initialized (a fresh gate equals its prior); a *de-collapse* cross-entropy trains the residuals against a soft target from the running statistics. The refinement `decol_hier_v2` re-anchors the alive/rising priors on the uncorrupted recurrence-count signal and gates the corruptible mean/staleness terms behind a has-history mask, so feature corruption cannot drive a recurring-active pair to DEATH.
 
-![](figs/fig1_lifecycle_pair.png)
+![](../figs/fig1_lifecycle_pair.png)
 
 *Figure 1. Decoded per-pair lifecycle, real CoEdit pair 3178→7437 (42 events, 18.69 min; config B, calibrated next-state $s^{\text{cal}}_{t+1}$). x-axis: event index; curves: edit-rate slope and the three lifecycle gates. Takeaway: the gates track the pair's own cadence (1 BIRTH, 20 REINFORCE, 21 DECAY, 0 DEATH; $p_{\text{alive}}\in[0.579,0.801]$ throughout), with REINFORCE↔DECAY flips at slope sign-changes - the readout follows the data, not a fixed prior.*
 
@@ -164,7 +164,7 @@ The readout supports two override modes. A **driver override** ($\mathrm{do}(\te
 
 *The directionality survives training - it is not a hardcoded artifact.* The forced-state existence intent is the existence-decoder weight $w_s=\mathrm{softplus}(\theta_s)$, and $\mathrm{do}(\text{state}{=}s)$ moves $p_{\text{edge}}$ monotonically in $w_s$, so the do(state) ordering is the sorted order of $w$. A natural question is whether this reflects only the hand-set init $w=[0.1,1,1,0.3,0]$. The **trained per-seed weights** answer it: after BCE training the partial order **DEATH < IDLE < DECAY < {REINFORCE, BIRTH}** holds on every seed (seed 42: $7.8\mathrm{e}{-5} < 0.060 < 0.31 < \{1.08, 1.27\}$; 3-seed means $0.0001 < 0.044 < 0.381 < \{1.023, 1.347\}$), so the directionality is a **learned property, not an init artifact**. *Honest exception:* the init ties REINFORCE = BIRTH and training **breaks** it (REINFORCE becomes largest, $|\Delta w|$ = 0.19/0.36/0.43 per seed), so the partial order, not a strict REINFORCE = BIRTH equality, is what holds. Figure 2 plots these **trained** per-seed weights (3-seed mean$\pm$std) against the init-equivalent prior, making the learned tie-break explicit. `do(noop)` gives $\Delta=0$, and reversibility is exact ($\max|\Delta p_{\text{edge}}|=0$ after undo, all seeds) by exact input-reconstruction - a numerical, not causal-content, statement.
 
-![](figs/fig2_counterfactual_ladder.png)
+![](../figs/fig2_counterfactual_ladder.png)
 
 *Figure 2. Trained existence-intent ladder. Per-state existence weight $w_s=\mathrm{softplus}(\theta_s)$ after BCE training (3-seed mean$\pm$std, CoEdit config B; from `cf_trained_theta_3seed.json`) in solid blue, plotted against the init-equivalent prior $w=[0.1,1,1,0.3,0]$ in grey (the dashed line, where REINFORCE = BIRTH). Training preserves the partial order DEATH < IDLE < DECAY < {BIRTH, REINFORCE} on every seed and breaks the init REINFORCE = BIRTH tie (REINFORCE largest, $|\Delta w|$ = 0.19/0.36/0.43 per seed). Since $\mathrm{do}(\text{state})$ moves $p_{\text{edge}}$ monotonically in $w_s$, this is the do(state) ordering: $\mathrm{do}(\text{DEATH})$ drives existence down for 100% of pairs/seed, $\mathrm{do}(\text{BIRTH/REINFORCE})$ up for 100%/seed, $\mathrm{do}(\text{noop})\;\Delta=0$, exact reversibility (§4).*
 
@@ -174,11 +174,11 @@ The readout supports two override modes. A **driver override** ($\mathrm{do}(\te
 
 **The readout encodes a faithful, falsifiable rule.** The lifecycle decoder is not a free-form classifier read post-hoc: it commits to a checkable rule - *REINFORCE iff the edit cadence is rising* - that could be wrong and is confirmed three ways from the **learned** gates (non-tautological). (A) At the population level, the slope-vs-state separation is sign-correct: REINFORCE-decoded pairs sit at slope $\approx-0.49$, above DECAY-decoded pairs at $\approx-0.86$. (B) Under $\mathrm{do}(\text{slope})$, forcing a falling pair's cadence upward flips $P(\text{REINFORCE})$ from 0 to 1. (C) The same flip holds at single-pair granularity. Because all three read the learned residuals (not a fixed prior), a decoder that had ignored cadence would fail (A)-(C); it does not.
 
-![](figs/fig6_faithful_falsifiable.png)
+![](../figs/fig6_faithful_falsifiable.png)
 
 *Figure 3. The "REINFORCE ⟺ rising cadence" rule, confirmed three ways from learned gates: (A) population slope separation (REINFORCE −0.49 > DECAY −0.86); (B) $\mathrm{do}(\text{slope})\to P(\text{REINFORCE})$ switching 0→1; (C) a single-pair counterfactual flip. Non-tautological: a cadence-blind decoder would fail all three (§4).*
 
-![](figs/fig7_intervenable_scm.png)
+![](../figs/fig7_intervenable_scm.png)
 
 *Figure 4. Bidirectional typed control of the lifecycle readout: REINFORCE→$\mathrm{do}(\text{silence})$→DEATH (1.0) and DECAY→$\mathrm{do}(\text{rising})$→REINFORCE (1.0); dose-response signs correct (rate→REINFORCE +, rate→DEATH −); reversibility $\Delta=0$ by exact reconstruction (§4).*
 
@@ -190,7 +190,7 @@ The readout supports two override modes. A **driver override** ($\mathrm{do}(\te
 
 We explored whether the model can flag *its own* low-confidence predictions via a **walked-chain causal-coherence** signal. A per-pair belief $b_t$ is carried by $T_{uv}$ projected onto the causal-admissible ray; the coherence $c_t \in [0,1]$ is the agreement between the model's free next-state prediction and this belief. The flag is off by default and byte-identical when off, so it never perturbs AP. Across three seeds (CoEdit, grounded-init), $c_t$ separates cleanly by causal-rule outcome: rule-following 0.891 ± 0.042 vs. rule-violating 0.216 ± 0.174, a well-spread signal with full $[0,1]$ support.
 
-![](figs/fig3_causal_coherence.png)
+![](../figs/fig3_causal_coherence.png)
 
 *Figure 5. Causal-coherence $c_t$ by outcome (CoEdit, grounded-init, three seeds). Bars: mean $c_t$, whiskers sample std. Takeaway: rule-consistent (0.891 ± 0.042) vs rule-violating (0.216 ± 0.174) separate cleanly - but $c_t$ measures the model's *own* rule violations, not external error (§5).*
 
@@ -210,7 +210,7 @@ All models run through the **same** harness (`experiments/train.py`), splits, an
 
 **Is CoEdit pessimizing baselines specifically?** No - our simplified DyGFormer re-implementation is below its published level on **Wikipedia** as well (0.786 here vs ≈0.98 published; the gap is architectural, see the baseline-fidelity note after Table 1), so its low CoEdit AP is the re-implementation ceiling, not CoEdit-specific starvation. What we read from Tables 1-2 is the *relative* ordering within one shared harness; the absolute levels are not comparable to published SOTA.
 
-![](figs/fig4_coedit_headline.png)
+![](../figs/fig4_coedit_headline.png)
 
 *Figure 6. CoEdit inductive AP: RS-GNN (config B) vs. protocol-matched baselines (six parametric + DyGFormer frontier + two EdgeBank floors), three seeds {1, 7, 42}. Bars: mean, whiskers: sample std. Takeaway: RS-GNN 0.9885 ± 0.0035 (three-seed; 0.9876 ± 0.0030 at five seeds), +13.5 pts (paired 95% CI [12.6, 14.5]) over the best parametric baseline (TGAT, 0.853 at three seeds / 0.847 at five); the modern frontier DyGFormer reaches only 0.612, and the EdgeBank floor ≈0.59.*
 
@@ -258,7 +258,7 @@ Every cell traces to that model's own JSON at seeds {1, 7, 42} (per-seed values 
 
 **Reading the table.** **CoEdit** is the discriminating benchmark: RS-GNN is #1 both ways, +13.5 inductive over TGAT (0.853; paired 95% CI [12.6, 14.5], n=3), with the DyGFormer frontier (0.612) and EdgeBank floor (≈0.59) lower still. On **Wikipedia** RS-GNN is #1 transductive and #2 inductive (0.9959 vs TGAT 0.9981, whose transductive AP collapses to 0.658), so it is the best all-around model. **MOOC** is near-saturated; we claim only "competitive at the ceiling."
 
-![](figs/fig5_cross_dataset.png)
+![](../figs/fig5_cross_dataset.png)
 
 *Figure 7. Cross-dataset result summary (the headline visualization): RS-GNN (config B) vs. the best baseline per dataset, transductive and inductive AP, three seeds {1, 7, 42}, with the CoEdit B-vs-C decoupling gap overlaid. Takeaway: a clear CoEdit inductive win (+13.5 over the best measured competitor) that the B-vs-C ablation attributes to the detach (−22.1 inductive vs −3.8 transductive when removed); best-or-co-best on Wikipedia/MOOC, where TGAT's lone inductive win on Wikipedia (0.9981 vs 0.9959) is paired with a collapsed transductive AP (0.658) - the same identity-shortcut signature the ablation isolates. This figure, with Tables 1-3, carries the cross-dataset and mechanism narrative.*
 
@@ -323,7 +323,7 @@ On CoEdit the result is decisive - **+21.99 pp** (0.9883 → 0.7684) - and is th
 
 All cells are mean ± sample std over the three seeds {1, 7, 42}.
 
-![](figs/fig6_decoupling_ablation.png)
+![](../figs/fig6_decoupling_ablation.png)
 
 *Figure 8. Decoupling ablation, CoEdit inductive AP. Bars: seed-mean ind-AP, whiskers sample std. Takeaway: the end-to-end configuration (C) collapses inductive AP relative to the decoupled full model (B); at five seeds B 0.9876 / C 0.7593, B−C = +22.8 pts (three-seed B 0.9885 / C 0.767 / A 0.928 for cross-arm comparability). Arm A (0.928, no-lifecycle ablation) already clears every baseline.*
 
@@ -579,22 +579,22 @@ Where the body uses code identifiers, they map to math symbols as follows; we us
 
 These five schematics illustrate the architecture described in §3 and §5; they are diagrams, not results, and carry no numbers.
 
-![](figs/A1_two_stream_detach.png)
+![](../figs/A1_two_stream_detach.png)
 
 *Figure A1. Two-stream architecture. Backbone representation `edge_h` crosses a stop-gradient (detach wall) before the symbolic Stream B; no link-prediction gradient reaches the backbone (§3.1, §3.7).*
 
-![](figs/A2_gradient_decoupling.png)
+![](../figs/A2_gradient_decoupling.png)
 
 *Figure A2. Three disjoint gradient routes: KL → backbone; BCE → scored head ($s^{\text{pos}}_{t+1}$); de-collapse CE → interpretable head ($s^{\text{cal}}_{t+1}$). The wall stops every Stream-B gradient at `edge_h.detach()` - zero backbone gradient (§3.7, verified §3.4).*
 
-![](figs/A3_hier_decode_tree.png)
+![](../figs/A3_hier_decode_tree.png)
 
 *Figure A3. Decode tree: gates $p_{\text{birth}}/p_{\text{alive}}/p_{\text{rising}}$ factor the five states (§3.3).*
 
-![](figs/A4_lifecycle_fsm_band5.png)
+![](../figs/A4_lifecycle_fsm_band5.png)
 
 *Figure A4. Admissibility band $C_{\text{BAND-5}}$: only adjacent transitions along the IDLE-BIRTH-REINFORCE-DECAY-DEATH axis are permitted; IDLE→DEATH is band-blocked (§3.5).*
 
-![](figs/A5_causal_confidence_overlay.png)
+![](../figs/A5_causal_confidence_overlay.png)
 
 *Figure A5. The free next-state prediction overlaid against the walked belief $b_t$; their agreement is $c_t$. Off by default, byte-identical when off (§5).*

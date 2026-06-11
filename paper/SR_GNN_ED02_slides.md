@@ -58,7 +58,7 @@ A **single-variable knob ablation** - flip `enable_main_predictor` False→True,
 
 ## The finding visualized
 
-![w:760](figs/fig6_decoupling_ablation.png)
+![w:760](../figs/fig6_decoupling_ablation.png)
 
 <span class="cite">Decoupling ablation, CoEdit inductive AP. Decoupled full model (B) vs end-to-end (C). At 5 seeds: B 0.9876 / C 0.7593 → **B−C = +22.8 pp**. Arm A (no-lifecycle, 0.928) already clears every baseline.</span>
 
@@ -97,7 +97,7 @@ The obvious challenge: *"decoupling is just classic freeze-then-probe."* So we r
 
 ## Method: two streams, one detach
 
-![w:820](figs/A1_two_stream_detach.png)
+![w:820](../figs/A1_two_stream_detach.png)
 
 <span class="cite">Backbone representation `edge_h` crosses a stop-gradient (`.detach()`) before the symbolic Stream B; **no link-prediction gradient reaches the backbone.**</span>
 
@@ -135,7 +135,7 @@ This is a **temporal concept bottleneck** (Koh et al. 2020) - **not** a learned 
 
 ## The readout is falsifiable and bidirectional
 
-![w:560](figs/fig6_faithful_falsifiable.png) ![w:560](figs/fig7_intervenable_scm.png)
+![w:560](../figs/fig6_faithful_falsifiable.png) ![w:560](../figs/fig7_intervenable_scm.png)
 
 <span class="cite">Left: the "REINFORCE ⟺ rising cadence" rule, three views (population / do(slope) / single-pair). Right: bidirectional typed control - REINFORCE→do(silence)→DEATH (1.0), DECAY→do(rising)→REINFORCE (1.0); reversibility Δ=0 by exact reconstruction.</span>
 
@@ -145,7 +145,7 @@ This is a **temporal concept bottleneck** (Koh et al. 2020) - **not** a learned 
 
 ## Results: CoEdit is the discriminating benchmark
 
-![w:720](figs/fig4_coedit_headline.png)
+![w:720](../figs/fig4_coedit_headline.png)
 
 <span class="cite">CoEdit inductive AP, 3 seeds. RS-GNN (config B) **0.9885 ± 0.0035** (5-seed 0.9876 ± 0.0030), **+13.5 pts** (95% CI [12.6,14.5]) over the best parametric baseline (TGAT 0.853). DyGFormer frontier 0.612; EdgeBank floor ≈0.59 - the win is **not** memorization.</span>
 

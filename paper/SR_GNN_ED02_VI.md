@@ -111,7 +111,7 @@ Bốn số hạng này tổng bằng một theo cấu trúc. Giờ đây DECAY c
 
 Mỗi cổng là $\sigma(\text{analytic\_prior} + \text{phần dư khả học nhỏ})$, được khởi tạo bằng không sao cho một cổng mới bằng đúng tiên nghiệm phân tích của nó; một cross-entropy *chống-sụp-đổ (de-collapse)* huấn luyện các phần dư so với một mục tiêu mềm dẫn xuất từ các thống kê đang chạy. Một tinh chỉnh (`decol_hier_v2`) tái neo (re-anchor) các tiên nghiệm alive/rising lên tín hiệu số-đếm-tái-diễn không bị nhiễu và đặt các số hạng mean/staleness có thể bị nhiễu sau một mặt nạ "có-lịch-sử (has-history)", nên sự nhiễu đặc trưng không thể đẩy một cặp tái diễn đang hoạt động về DEATH.
 
-![](figs/fig1_lifecycle_pair.png)
+![](../figs/fig1_lifecycle_pair.png)
 
 *Hình 1. Vòng đời theo từng cặp được giải mã cho một cặp CoEdit thực (3178→7437, 42 sự kiện, khoảng 18.69 phút, config B, đã hiệu chỉnh `s_t1_cal`). Độ dốc tốc độ chỉnh sửa (tăng→giảm) và các cổng phân cấp bám theo nhịp điệu của chính cặp đó: 1 BIRTH, 20 REINFORCE, 21 DECAY, 0 DEATH; p_alive luôn nằm trong [0.579, 0.801] > 0.5, với các lần lật REINFORCE↔DECAY tại các điểm đổi dấu độ dốc. Bộ đọc bám theo nhịp điệu thực của dữ liệu thay vì một tiên nghiệm cố định.*
 
@@ -162,7 +162,7 @@ Stop-gradient trên `edge_h` chặn mọi gradient Luồng-B khỏi backbone. Đ
 
 **Phản thực tồn tại - và chiều của nó SỐNG SÓT sau huấn luyện.** `do(state = DEATH)` đưa xác suất tồn tại được dự đoán *xuống*, với một sự rớt ở **100% các cặp trên mọi seed** (trung bình $\Delta = -0.522 \pm 0.001$); `do(state = REINFORCE)` và `do(BIRTH)` đưa nó *lên*, với 100% trên mọi seed. Cường độ tồn tại buộc-trạng-thái là trọng số bộ giải mã $w_s=\mathrm{softplus}(\theta_s)$, và $\mathrm{do}(\text{state}{=}s)$ dịch $p_{\text{edge}}$ đơn điệu theo $w_s$, nên thứ tự do(state) là thứ tự đã sắp của $w$. Một câu hỏi tự nhiên là liệu thứ tự này có chỉ phản ánh giá trị khởi tạo đặt tay $w=[0.1,1,1,0.3,0]$ hay không. Chúng tôi trả lời bằng **các trọng số đã huấn luyện theo từng seed**: sau khi huấn luyện BCE, thứ tự bộ phận **DEATH < IDLE < DECAY < {REINFORCE, BIRTH}** đúng trên *mọi* seed (seed 42: $w_{\text{DEATH}}=7.8\mathrm{e}{-5} < w_{\text{IDLE}}=0.060 < w_{\text{DECAY}}=0.31 < w_{\text{BIRTH}}=1.08 < w_{\text{REINFORCE}}=1.27$; trung bình 3 seed $0.0001 < 0.044 < 0.381 < \{1.023, 1.347\}$). Bốn bất đẳng thức lõi tồn tại trên cả ba seed, nên chiều của do(state) là một **tính chất học được của bộ giải mã, không phải hệ quả của giá trị khởi tạo** - trả lời trực tiếp cho lo ngại rằng các trọng số tồn tại bị gán cứng. *Ngoại lệ cần nêu trung thực:* giá trị khởi tạo buộc REINFORCE = BIRTH, nhưng huấn luyện **phá vỡ** ràng buộc đó (REINFORCE trở thành trọng số lớn nhất duy nhất, $|\Delta w|$ = 0.19/0.36/0.43 mỗi seed), nên chỉ thứ tự bộ phận, không phải đẳng thức chặt REINFORCE = BIRTH, là đúng sau huấn luyện. Hình 2 vẽ các **trọng số đã huấn luyện** này (trung bình$\pm$std 3 seed) so với prior tương đương-khởi-tạo, làm rõ việc phá vỡ ràng buộc học được. `do(noop)` cho $\Delta = 0$ bằng tái dựng chính xác; **tính đảo ngược chính xác** (max $|\Delta\, p_{\text{edge}}| = 0$ sau hoàn tác, mọi seed) - một phát biểu số học bằng tái dựng đầu vào chính xác, không phải một phát biểu về nội dung nhân quả.
 
-![](figs/fig2_counterfactual_ladder.png)
+![](../figs/fig2_counterfactual_ladder.png)
 
 *Hình 2. Thang cường-độ-tồn-tại đã huấn luyện. Trọng số tồn tại theo từng trạng thái $w_s=\mathrm{softplus}(\theta_s)$ sau huấn luyện BCE (trung bình$\pm$std 3 seed, CoEdit config B; từ `cf_trained_theta_3seed.json`) ở đường xanh liền, vẽ so với prior tương đương-khởi-tạo $w=[0.1,1,1,0.3,0]$ ở đường xám đứt (nơi REINFORCE = BIRTH). Huấn luyện giữ thứ tự bộ phận DEATH < IDLE < DECAY < {BIRTH, REINFORCE} trên mọi seed và phá vỡ ràng buộc REINFORCE = BIRTH của khởi tạo (REINFORCE lớn nhất, $|\Delta w|$ = 0.19/0.36/0.43 mỗi seed). Vì $\mathrm{do}(\text{state})$ dịch $p_{\text{edge}}$ đơn điệu theo $w_s$, đây chính là thứ tự do(state): do(DEATH) hạ tồn tại cho 100% các cặp/seed, do(BIRTH/REINFORCE) nâng cho 100%/seed, do(noop) cho $\Delta=0$, đảo ngược chính xác (§4).*
 
@@ -172,11 +172,11 @@ Stop-gradient trên `edge_h` chặn mọi gradient Luồng-B khỏi backbone. Đ
 
 **Bộ đọc mã hóa một quy luật trung thực, có thể bác bỏ (falsifiable).** Bộ giải mã vòng đời không phải một bộ phân loại tự do đọc hậu kỳ: nó cam kết một quy luật kiểm tra được - *REINFORCE khi và chỉ khi nhịp chỉnh sửa đang tăng* - vốn có thể sai và được xác nhận ba cách từ các cổng **đã học** (không phải hằng đẳng - non-tautological). (A) Ở mức quần thể, phân tách slope-theo-trạng-thái đúng dấu: các cặp giải mã REINFORCE ở slope $\approx-0.49$, trên các cặp giải mã DECAY ở $\approx-0.86$. (B) Dưới $\mathrm{do}(\text{slope})$, buộc nhịp của một cặp đang giảm lên cao lật $P(\text{REINFORCE})$ từ 0 lên 1. (C) Cùng cú lật đó đúng ở mức từng-cặp đơn lẻ. Vì cả ba đọc các tham số dư đã học (không phải một prior cố định), một bộ giải mã bỏ qua nhịp điệu sẽ trượt (A)-(C); nó không trượt.
 
-![](figs/fig6_faithful_falsifiable.png)
+![](../figs/fig6_faithful_falsifiable.png)
 
 *Hình 3. Quy luật "REINFORCE ⟺ nhịp đang tăng", xác nhận ba cách từ các cổng đã học: (A) phân tách slope quần thể (REINFORCE −0.49 > DECAY −0.86); (B) $\mathrm{do}(\text{slope})\to P(\text{REINFORCE})$ bật 0→1; (C) một cú lật phản thực đơn-cặp. Không hằng đẳng: một bộ giải mã mù-nhịp sẽ trượt cả ba (§4).*
 
-![](figs/fig7_intervenable_scm.png)
+![](../figs/fig7_intervenable_scm.png)
 
 *Hình 4. Kiểm soát hai chiều có-kiểu của bộ đọc vòng đời: REINFORCE→$\mathrm{do}(\text{silence})$→DEATH (1.0) và DECAY→$\mathrm{do}(\text{rising})$→REINFORCE (1.0); dấu đáp-ứng-theo-liều đúng (rate→REINFORCE +, rate→DEATH −); tính đảo ngược $\Delta=0$ bằng tái dựng chính xác (§4).*
 
@@ -192,7 +192,7 @@ Chúng tôi cũng khảo sát liệu mô hình có thể tự gắn cờ (flag) 
 
 Trên ba seed (CoEdit, grounded-init), AP được bảo toàn và $c_t$ phân tách sạch theo kết cục luật-nhân-quả: các dự đoán *tuân theo (following)* luật mang tính nhất quán trung bình 0.891 ± 0.042, các dự đoán *vi phạm (violating)* luật 0.216 ± 0.174 - một tín hiệu trải rộng tốt, không bị sụp đổ, với toàn bộ miền giá trị $[0, 1]$.
 
-![](figs/fig3_causal_coherence.png)
+![](../figs/fig3_causal_coherence.png)
 
 *Hình 5. Tính-nhất-quán-nhân-quả c_t theo kết cục (CoEdit, grounded-init, ba seed, độ lệch chuẩn mẫu): nhất-quán-với-luật 0.891 ± 0.042 so với vi-phạm-luật 0.216 ± 0.174. Một thước đo tự-nhất-quán mang tính tư vấn (advisory) - nó gắn cờ các vi phạm luật của chính mô hình, không phải lỗi dự đoán ngoại tại (§5).*
 
@@ -206,7 +206,7 @@ Trên ba seed (CoEdit, grounded-init), AP được bảo toàn và $c_t$ phân t
 
 Mọi mô hình - RS-GNN và sáu baseline - chạy qua **cùng** một harness huấn luyện/đánh giá (`experiments/train.py`), cùng các split theo trình tự thời gian 70/15/15, và cùng một pool negative đã được kiểm toán rò rỉ (§6.3 xác nhận test AP không phải 1.0). Pool được xây dựng công bằng theo từng giao thức: các negative transductive rút từ các cặp seen→seen, inductive từ pool node-chưa-thấy (ind→ind), nên một positive inductive không bao giờ bị chấm điểm so với một negative bất khả thi một cách tầm thường. AP là `average_precision_score` của sklearn trên pool đó, đồng nhất cho mọi mô hình; các chỉ số là trung bình ± std trên các seed {42, 1, 7}. RS-GNN ở đây là **config B**, được tinh chỉnh chỉ trên CoEdit.
 
-![](figs/fig4_coedit_headline.png)
+![](../figs/fig4_coedit_headline.png)
 
 *Hình 6. AP inductive CoEdit: RS-GNN (config B) so với baseline khớp-giao-thức, ba seed (std mẫu). RS-GNN đạt 0.9885 ± 0.0035 (ba seed; 0.9876 ± 0.0030 tại năm seed), +13.5 điểm so với baseline tốt nhất (TGAT, 0.853 ở ba seed / 0.847 ở năm). CoEdit là benchmark trưng bày; biên độ inductive ở đây là kết quả tiêu đề.*
 
@@ -240,7 +240,7 @@ Mọi mô hình - RS-GNN và sáu baseline - chạy qua **cùng** một harness 
 
 ᵇ **Độ trung thực baseline (bản tái hiện so với đã công bố).** DyGFormer/TGN/TGAT của chúng tôi là bản tái hiện đơn-hop đơn giản hóa chạy qua harness chung, nên AP inductive tuyệt đối nằm dưới số DyGLib official (DyGFormer Wikipedia inductive ≈0.98, TGN ≈0.97 [Yu et al., 2023]). Chúng tôi đã kiểm chứng gap này là **do kiến trúc, không phải thiếu huấn luyện**: chạy lại DyGFormer và TGN ở ngân sách công bố đầy đủ của DyGLib (100 epoch, lr $10^{-4}$, batch 200, patience 20) để AP inductive Wikipedia gần như không đổi (DyGFormer 0.762 ± 0.014, TGN 0.866 ± 0.014, 3 seed; val AP cũng chặn ở 0.84 / 0.93), nên train lâu hơn không thu hẹp gap - chỉ các kiến trúc multi-hop official mới làm được (`experiments/results/reconcile/reconcile_dyglib_wikipedia_3seed.json`). **Bảng 1-2 do đó là so sánh nhất quán-nội-bộ trong cùng harness** - mọi mô hình, kể cả RS-GNN, dùng cùng backbone đơn giản hóa, cùng split, cùng giao thức - và *không* phải tuyên bố so với SOTA đã công bố. Biên độ CoEdit trong-harness và, trên hết, các thí nghiệm có kiểm soát trong-mô-hình (knob một-cờ §6.3, đối chứng đóng băng-rồi-dò §6.2) mới mang đóng góp; không cái nào phụ thuộc mức tuyệt đối của baseline. Để khớp SOTA công bố trong harness cần nhúng các mô hình DyGLib official (§8.4).
 
-![](figs/fig5_cross_dataset.png)
+![](../figs/fig5_cross_dataset.png)
 
 *Hình 7. Tóm tắt liên-dataset: RS-GNN (config B) so với baseline tốt nhất theo từng dataset, AP transductive và inductive, ba seed. RS-GNN là chiến thắng rõ ràng trên CoEdit và tốt-nhất-hoặc-đồng-tốt trên Wikipedia/MOOC (trên Wikipedia inductive, 0.9981 của TGAT nhỉnh hơn 0.9959 của RS-GNN một chút, nhưng AP transductive của TGAT sụp đổ xuống 0.658). CoEdit là benchmark trưng bày; Wikipedia/MOOC ngang ngửa ở mức trần.*
 
@@ -254,7 +254,7 @@ Mọi mô hình - RS-GNN và sáu baseline - chạy qua **cùng** một harness 
 | C - end-to-end (decoupling tắt) | correct | 0.7672 ± 0.0107 | 0.9609 |
 | A - không-vòng-đời, không-tinh-chỉnh | toán tử v3 + bộ đọc phẳng, đã detach | 0.928 ± 0.0043 | 0.9912 |
 
-![](figs/fig6_decoupling_ablation.png)
+![](../figs/fig6_decoupling_ablation.png)
 
 *Hình 8. Ablation tách rời, AP inductive CoEdit, ba seed {42, 1, 7}: B (mô hình đầy đủ, decoupled, 0.9885 ± 0.0035) so với C (end-to-end, decoupling tắt, 0.7672 ± 0.0107) so với A (RS-GNN không-vòng-đời, ablation không-tinh-chỉnh cô lập cơ chế detach, 0.928 ± 0.0043). Các arm A và C là ablation của mô hình đầy đủ B, không phải các mô hình cạnh tranh. Ghép end-to-end làm sụp đổ AP inductive; detach đáng giá **+22.1 ± 1.4 điểm** (giao thức config-B so với design=correct, mọi seed trên 20 điểm: B−C theo từng seed = [0.206, 0.225, 0.234]). Ablation không-vòng-đời (A) đã đánh bại mọi baseline (0.928 ± 0.0043, +7.5 pp so với TGAT). (Chiều cao cột thể hiện ind-AP trung bình seed; PNG nền được vẽ từ các điểm seed-42 trước đó và sẽ được vẽ lại tại C = 0.767.)*
 
@@ -487,22 +487,22 @@ Mọi đường dẫn tương đối với `SR-GNN/experiments/results/` trừ k
 
 Năm sơ đồ này minh họa kiến trúc được mô tả trong §3 và §5; chúng là sơ đồ, không phải kết quả, và không mang con số.
 
-![](figs/A1_two_stream_detach.png)
+![](../figs/A1_two_stream_detach.png)
 
 *Hình A1. Kiến trúc hai luồng RS-GNN. Luồng A (backbone liên tục) chỉ được huấn luyện bởi KL tiết kiệm biến phân; biểu diễn `edge_h` của nó vượt qua một stop-gradient trước Luồng B ký hiệu (giải mã vòng đời → bộ giải mã tồn tại → logit được chấm điểm), nên link-prediction loss không bao giờ chạm tới backbone (§3.1, §3.7).*
 
-![](figs/A2_gradient_decoupling.png)
+![](../figs/A2_gradient_decoupling.png)
 
 *Hình A2. Định tuyến gradient qua bức tường detach (§3.7). KL → backbone; BCE dự đoán liên kết → đầu tồn tại (`s_t1_pos`); CE chống-sụp-đổ → đầu `s_t1_cal` phân cấp. Bức tường dừng mọi gradient Luồng-B tại `edge_h.detach()` - gradient backbone bằng không (đã kiểm chứng §3.4).*
 
-![](figs/A3_hier_decode_tree.png)
+![](../figs/A3_hier_decode_tree.png)
 
 *Hình A3. Cây giải mã vòng đời phân cấp (§3.3): ba cổng theo từng cặp `p_birth`/`p_alive`/`p_rising` phân tích năm trạng thái sao cho DECAY trở nên có thể đạt được bằng argmax - bản sửa cấu trúc mà một softmax phẳng không thể cung cấp.*
 
-![](figs/A4_lifecycle_fsm_band5.png)
+![](../figs/A4_lifecycle_fsm_band5.png)
 
 *Hình A4. Dải khả-thừa-nhận $C_{\text{BAND-5}}$: chỉ các chuyển dịch kề nhau dọc trục IDLE-BIRTH-REINFORCE-DECAY-DEATH được phép, theo cả hai chiều; IDLE→DEATH bị dải chặn (§3.5).*
 
-![](figs/A5_causal_confidence_overlay.png)
+![](../figs/A5_causal_confidence_overlay.png)
 
 *Hình A5. Dự đoán trạng-thái-kế-tiếp tự do của mô hình được phủ lên niềm tin theo-bước $b_t$; sự tương hợp của chúng là tính nhất quán $c_t$. Mặc định tắt và giống hệt từng byte khi tắt (§5).*

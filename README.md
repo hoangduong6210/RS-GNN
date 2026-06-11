@@ -10,11 +10,13 @@ A two-stream temporal link-prediction model whose continuous backbone is shaped 
 
 ```
 SR-GNN/
-├── SR_GNN_ED02.md / .pdf            Paper (English) - the RS-GNN V2 submission draft
-├── SR_GNN_ED02_VI.md / .pdf         Paper (Vietnamese, mirrored)
-├── SR_GNN_ED02_slides.md            Talk slides (Marp, English)
-├── CHANGELOG_v1_to_ED02.md / .pdf   v1 → ED02 change report (with summary figure)
-├── PERPAIR_GLOBALIZATION_DESIGN.md  Future-work roadmap (per-pair globalization)
+├── paper/                           All RS-GNN V2 documents:
+│   ├── SR_GNN_ED02.md / .pdf            Paper (English) - the RS-GNN V2 submission draft
+│   ├── SR_GNN_ED02_VI.md / .pdf         Paper (Vietnamese, mirrored)
+│   ├── SR_GNN_ED02_slides.md            Talk slides (Marp, English)
+│   ├── CHANGELOG_v1_to_ED02.md / .pdf   v1 → ED02 change report (with summary figure)
+│   ├── PERPAIR_GLOBALIZATION_DESIGN.md  Future-work roadmap (per-pair globalization)
+│   └── _header_breakcode.tex           LaTeX header used when rendering the papers
 ├── figs/                            Paper figures (1-8) + appendix schematics (A1-A5) + generators
 └── experiments/                     Model code, runners, and results JSONs (provenance for Appendix A)
 ```

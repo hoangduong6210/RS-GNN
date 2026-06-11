@@ -36,11 +36,11 @@ a stop-gradient branch.
 
 **v1 - RS-GNN: four-layer neuro-symbolic compiler**
 
-![v1 - RS-GNN: four-layer neuro-symbolic compiler](baseline/paper/figures/fig6_architecture.png)
+![v1 - RS-GNN: four-layer neuro-symbolic compiler](../baseline/paper/figures/fig6_architecture.png)
 
 **v2 - RS-GNN: two-stream decoupled design**
 
-![v2 - RS-GNN: two-stream decoupled (VAE-KL backbone + detached lifecycle readout)](figs/A1_two_stream_detach.png)
+![v2 - RS-GNN: two-stream decoupled (VAE-KL backbone + detached lifecycle readout)](../figs/A1_two_stream_detach.png)
 
 - **v1** chains four layers, each enforcing one constraint - semantic relevance,
   temporal consistency (a lifecycle finite-state machine), minimal sufficiency
@@ -58,7 +58,7 @@ a stop-gradient branch.
 
 A four-panel overview of the full v1→v2 change set is below.
 
-![Overview of the v1 → v2 changes](figs/changelog_summary.png)
+![Overview of the v1 → v2 changes](../figs/changelog_summary.png)
 
 ---
 
