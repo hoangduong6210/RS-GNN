@@ -178,6 +178,33 @@ def main():
     if hasattr(model, "reset"): model.reset()
     if best_state is not None:
         model.load_state_dict(best_state)
+
+    # ── SERIALIZE TRAINED EXISTENCE-DECODER theta (reviewer tautology #4) ──────
+    # The do(state) ladder DEATH<IDLE<DECAY<REINF=BIRTH is currently read off the
+    # HARDCODED init spec EXISTENCE_W=[0.1,1,1,0.3,0] (fsm_intervene.py). To prove the
+    # ordering is a TRAINED property (not just the designer's init order), dump the
+    # per-seed TRAINED weights w_s = softplus(existence_decoder.theta) from the
+    # best-val checkpoint so the counterfactual battery can re-run do(state) with the
+    # REAL theta. Sidecar JSON next to the npz; cheap, eval-only, no model change.
+    try:
+        import torch.nn.functional as _F
+        _theta = best_state["existence_decoder.theta"].detach().float().cpu()
+        _w_s = _F.softplus(_theta).numpy().tolist()
+        _theta_json = os.path.splitext(args.out)[0] + "_theta.json"
+        with open(_theta_json, "w") as _tf:
+            json.dump({
+                "seed": args.seed, "dataset": args.dataset,
+                "theta": _theta.numpy().tolist(),
+                "w_s_trained": _w_s,                      # softplus(theta), the REAL weights
+                "w_s_init_spec": [0.1, 1.0, 1.0, 0.3, 0.0],  # hardcoded EXISTENCE_W init
+                "state_names": ["IDLE", "BIRTH", "REINFORCE", "DECAY", "DEATH"],
+                "best_val_ap": float(best_val_ap),
+            }, _tf, indent=2)
+        print(f"[faith] trained existence theta -> {_theta_json}  "
+              f"w_s={['%.4f' % x for x in _w_s]}")
+    except Exception as _e:
+        print(f"[faith][WARN] could not serialize trained theta: {_e}")
+
     model.enable_faithfulness_dump(args.out)
     test = run_epoch_v33(model, splits["test"], num_nodes, args.batch_size,
                          desc="test/faith", epoch=args.epochs)

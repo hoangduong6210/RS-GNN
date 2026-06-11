@@ -71,7 +71,8 @@ def measure(model):
 
 def run_epoch_v33(model, split_data, num_nodes, batch_size, optimizer=None,
                   inductive_nodes=None, seen_nodes=None, desc="train", epoch=0,
-                  het_collector=None, score_collector=None):
+                  het_collector=None, score_collector=None,
+                  neg_strategy="random", hist_neg_ctx=None):
     if hasattr(model, "set_epoch"):
         model.set_epoch(epoch)
     return run_epoch(model, split_data, num_nodes, batch_size,
@@ -79,7 +80,8 @@ def run_epoch_v33(model, split_data, num_nodes, batch_size, optimizer=None,
                      inductive_nodes=inductive_nodes,
                      seen_nodes=seen_nodes, desc=desc,
                      het_collector=het_collector,
-                     score_collector=score_collector)
+                     score_collector=score_collector,
+                     neg_strategy=neg_strategy, hist_neg_ctx=hist_neg_ctx)
 
 
 def run_one(dataset: str, seed: int, epochs: int, hidden: int,
@@ -95,8 +97,28 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
             causal_confidence: bool = False, cc_C: str = "band",
             cc_thr: float = 0.0, cc_self_consist_w: float = 0.0,
             cc_grounded_init: bool = False,
+            hardneg_eval: bool = False, hardneg_eval_seed: int = 12345,
+            edge_h_detach_scorepath: bool = True,
+            main_predictor_detach: bool = False,
+            determ_only_backbone: bool = False,
+            frozen_probe: bool = False, probe_epochs: int = None,
             dump_dir: str = None):
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
+    # ── FREEZE-THEN-PROBE (FtP) control (reviewer #1) ─────────────────────────
+    # When frozen_probe=True this run executes the classic linear-probing-transfer
+    # baseline for the decoupling-by-construction claim:
+    #   PHASE 1 (pretrain): force the END-TO-END link-pred head on (p0_fix→True =
+    #     "K1"/correct-e2e) so the backbone csn/ectg/drgc IS shaped by link-pred BCE,
+    #   PHASE 2 (freeze+probe): freeze that backbone, throw away the co-trained head,
+    #     train a FRESH link head on the frozen features, then measure inductive AP.
+    # Every OTHER flag (fsm_arch/decode/decol_hier_v2/causal_batch/lambda_edge_trans/
+    # hier_causal_policy/lfg/...) is passed through UNCHANGED so the ONLY difference
+    # vs config-B is the training protocol (decoupled-by-construction vs FtP), which
+    # is exactly the control the panel asked for. probe_epochs defaults to `epochs`.
+    if frozen_probe:
+        p0_fix = True                      # PHASE-1 must shape the backbone e2e
+        if probe_epochs is None:
+            probe_epochs = epochs
 
     data = download_dataset(dataset)
     splits = get_data_splits(data)
@@ -155,8 +177,16 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
                        causal_confidence=causal_confidence,
                        cc_C=cc_C, cc_thr=cc_thr,
                        cc_self_consist_w=cc_self_consist_w,
-                       cc_grounded_init=cc_grounded_init, **decol_kw).to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+                       cc_grounded_init=cc_grounded_init,
+                       edge_h_detach_scorepath=edge_h_detach_scorepath,
+                       main_predictor_detach=main_predictor_detach,
+                       determ_only_backbone=determ_only_backbone,
+                       **decol_kw).to(DEVICE)
+    # DETERM-ONLY freezes csn/ectg/drgc at init (requires_grad=False); optimize only
+    # the params that still require grad so the frozen backbone is provably untrained.
+    optimizer = torch.optim.Adam(
+        [p for p in model.parameters() if p.requires_grad],
+        lr=lr, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
     print(f"\n[v3.3] {dataset}  seed={seed}  epochs={epochs}  "
@@ -201,6 +231,49 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
             _dev_sync()
             print(f"  E{ep:02d}  tr_AP={tr['AP']:.4f}  va_AP={va['AP']:.4f}  [{time.time()-t0:.0f}s]")
 
+    # ── FREEZE-THEN-PROBE PHASE 2 (reviewer #1 control) ───────────────────────
+    # Pretraining above ran with enable_main_predictor=True (forced when
+    # frozen_probe), so the backbone is now shaped by link-pred BCE. Load the
+    # best-val pretrained weights, FREEZE the backbone, RE-INIT the link head,
+    # and train ONLY that fresh head on the frozen features. best_val_ap and
+    # best_state are then REDEFINED on the probe head so the test eval below
+    # reports the freeze-then-probe result (not the co-trained pretrain head).
+    if frozen_probe:
+        if hasattr(model, "reset"): model.reset()
+        model.load_state_dict(best_state)
+        n_frozen = model.freeze_backbone()
+        model.reinit_main_predictor()
+        head_params = [p for p in model.parameters() if p.requires_grad]
+        n_head = sum(p.numel() for p in head_params)
+        print(f"  [FtP] backbone frozen ({n_frozen} param-tensors); fresh head "
+              f"trainable params={n_head}; probe_epochs={probe_epochs}")
+        probe_opt = torch.optim.Adam(head_params, lr=lr, weight_decay=1e-5)
+        probe_sched = torch.optim.lr_scheduler.CosineAnnealingLR(
+            probe_opt, T_max=max(1, probe_epochs))
+        best_val_ap = 0.0
+        best_state = None
+        # Untimed warmup to repopulate the stateful stores from a clean reset.
+        if hasattr(model, "reset"): model.reset()
+        run_epoch_v33(model, splits["train"], num_nodes, batch_size,
+                      optimizer=probe_opt,
+                      desc=f"{dataset[:3]}/s{seed}/FtP/warmup", epoch=0)
+        for ep in range(1, probe_epochs + 1):
+            if hasattr(model, "reset"): model.reset()
+            tr = run_epoch_v33(model, splits["train"], num_nodes, batch_size,
+                               optimizer=probe_opt,
+                               desc=f"{dataset[:3]}/s{seed}/FtP/E{ep}/tr", epoch=ep)
+            va = run_epoch_v33(model, splits["val"], num_nodes, batch_size,
+                               desc=f"{dataset[:3]}/s{seed}/FtP/E{ep}/va", epoch=ep)
+            probe_sched.step()
+            if va["AP"] > best_val_ap:
+                best_val_ap = va["AP"]
+                best_state = {k: v.clone() if isinstance(v, torch.Tensor) else v
+                              for k, v in model.state_dict().items()}
+            if ep % 5 == 0 or ep == 1 or ep == probe_epochs:
+                _dev_sync()
+                print(f"  [FtP] E{ep:02d}  tr_AP={tr['AP']:.4f}  "
+                      f"va_AP={va['AP']:.4f}  [{time.time()-t0:.0f}s]")
+
     # Transductive test (capture per-edge scores for the post-CP dump)
     if hasattr(model, "reset"): model.reset()
     if best_state is not None:
@@ -212,17 +285,83 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
 
     # Inductive test
     test_ind = {"AP": float("nan"), "AUC": float("nan")}
+    # Hard-negative inductive metrics (Poursafaei et al. 2022). Populated only when
+    # hardneg_eval=True; evaluated on the SAME trained model + SAME warmup state as the
+    # random-NS inductive number, so the ONLY thing that changes across the three
+    # strategies is the negative set. PAIRING across config arms (B vs K1) is guaranteed
+    # by resetting np.random to a FIXED hardneg_eval_seed immediately before each
+    # strategy's eval — so for a given (dataset, data-seed, strategy) both B and K1
+    # draw bit-identical negative sets.
+    test_ind_hist = {"AP": float("nan"), "AUC": float("nan")}
+    test_ind_indneg = {"AP": float("nan"), "AUC": float("nan")}
+    hist_ctx = None
     if inductive_nodes:
-        if hasattr(model, "reset"): model.reset()
-        model.load_state_dict(best_state)
-        run_epoch_v33(model, splits["train"], num_nodes, batch_size,
-                      desc=f"{dataset[:3]}/s{seed}/warmup_tr", epoch=epochs)
-        run_epoch_v33(model, splits["val"], num_nodes, batch_size,
-                      desc=f"{dataset[:3]}/s{seed}/warmup_va", epoch=epochs)
-        test_ind = run_epoch_v33(model, splits["test"], num_nodes, batch_size,
+        def _warmup_and_eval(strategy, hnc):
+            if hasattr(model, "reset"): model.reset()
+            model.load_state_dict(best_state)
+            run_epoch_v33(model, splits["train"], num_nodes, batch_size,
+                          desc=f"{dataset[:3]}/s{seed}/warmup_tr", epoch=epochs)
+            run_epoch_v33(model, splits["val"], num_nodes, batch_size,
+                          desc=f"{dataset[:3]}/s{seed}/warmup_va", epoch=epochs)
+            return run_epoch_v33(model, splits["test"], num_nodes, batch_size,
                                  inductive_nodes=inductive_nodes,
                                  seen_nodes=sorted(seen_nodes),
-                                 desc=f"{dataset[:3]}/s{seed}/ind", epoch=epochs)
+                                 desc=f"{dataset[:3]}/s{seed}/ind_{strategy}",
+                                 epoch=epochs, neg_strategy=strategy, hist_neg_ctx=hnc)
+
+        # random NS (the existing Table-3 reference) — fixed eval RNG for pairing
+        np.random.seed(hardneg_eval_seed)
+        test_ind = _warmup_and_eval("random", None)
+
+        if hardneg_eval:
+            # Build the historical + inductive negative pools ONCE.
+            # historical pool (Poursafaei 2022) = multiset of train destination nodes
+            # (a "plausible past partner" absent at the current eval timestamp).
+            ind_set = set(inductive_nodes)
+            tr_src = splits["train"]["sources"]
+            tr_dst = splits["train"]["destinations"]
+            hist_dst_pool = np.asarray(tr_dst, dtype=np.int64)
+            # "active" positive pairs at the eval split — a sampled neg that equals one
+            # of these would be a real present edge, so it is rejected.
+            active_pos_set = set(
+                (int(s), int(d)) for s, d in zip(splits["test"]["sources"],
+                                                 splits["test"]["destinations"]))
+            # inductive pool (Poursafaei 2022 CORRECT def) = destinations of edges that
+            # appear ONLY in the TEST phase: (src,dst) pairs observed during test but
+            # NEVER present in train. This is about TEST-PHASE edges, NOT unseen nodes —
+            # the prior (buggy) def restricted the TRAIN-dst pool to inductive nodes,
+            # which is empty by construction (unseen nodes never appear in train) and
+            # degenerated to a fallback. The test-only pool is non-empty & non-degenerate.
+            train_pair_set = set(
+                (int(s), int(d)) for s, d in zip(tr_src, tr_dst))
+            test_only_dst = np.asarray(
+                [int(d) for s, d in zip(splits["test"]["sources"],
+                                        splits["test"]["destinations"])
+                 if (int(s), int(d)) not in train_pair_set],
+                dtype=np.int64)
+            hist_dst_pool_ind = test_only_dst
+            # honest flag: pool size, and whether it is still small/degenerate.
+            n_indneg_pool = int(hist_dst_pool_ind.size)
+            indpool_from_train = bool(n_indneg_pool > 0)   # retained key name; now means
+                                                           # "test-only pool non-empty"
+            if not indpool_from_train:
+                # last-resort fallback (should not trigger on real datasets): inductive
+                # node set itself, flagged so the JSON is honest about degeneracy.
+                hist_dst_pool_ind = np.asarray(sorted(ind_set), dtype=np.int64)
+                n_indneg_pool = int(hist_dst_pool_ind.size)
+            hist_ctx = {
+                "hist_dst_pool": hist_dst_pool,
+                "hist_dst_pool_ind": hist_dst_pool_ind,
+                "active_pos_set": active_pos_set,
+                "indpool_from_train": indpool_from_train,
+                "n_indneg_pool": n_indneg_pool,
+            }
+            print(f"  [hardneg] s{seed}: test-only inductive-NS pool n={n_indneg_pool} "
+                  f"(from_test_only={indpool_from_train})")
+            np.random.seed(hardneg_eval_seed)
+            test_ind_hist = _warmup_and_eval("historical", hist_ctx)
+            np.random.seed(hardneg_eval_seed)
+            test_ind_indneg = _warmup_and_eval("inductive", hist_ctx)
 
     _dev_sync()
     total_time = time.time() - t0
@@ -308,6 +447,11 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
         "decol_hier_v2": decol_hier_v2,
         "causal_batch": causal_batch,
         "hier_causal_policy": hier_causal_policy,
+        "edge_h_detach_scorepath": bool(edge_h_detach_scorepath),
+        "main_predictor_detach": bool(main_predictor_detach),
+        "determ_only_backbone": bool(determ_only_backbone),
+        "n_backbone_params_frozen": int(getattr(model, "_n_backbone_params_frozen", 0)),
+        "frozen_probe": bool(frozen_probe),
         "causal_confidence": causal_confidence,
         "cc_C":        cc_C if causal_confidence else None,
         "cc_thr":      cc_thr if causal_confidence else None,
@@ -315,6 +459,11 @@ def run_one(dataset: str, seed: int, epochs: int, hidden: int,
         "cc_grounded_init": bool(cc_grounded_init) if causal_confidence else None,
         "trans_ap":    test_trans["AP"], "trans_auc": test_trans["AUC"],
         "ind_ap":      test_ind["AP"],   "ind_auc":   test_ind["AUC"],
+        "ind_ap_histneg":  test_ind_hist["AP"],   "ind_auc_histneg":  test_ind_hist["AUC"],
+        "ind_ap_indneg":   test_ind_indneg["AP"], "ind_auc_indneg":   test_ind_indneg["AUC"],
+        "hardneg_eval":    bool(hardneg_eval),
+        "hardneg_indpool_from_train": (hist_ctx.get("indpool_from_train") if hist_ctx else None),
+        "hardneg_n_indneg_pool": (hist_ctx.get("n_indneg_pool") if hist_ctx else None),
         "best_val_ap": best_val_ap,
         "train_time_s": total_time,
         "final_info":  final_info,
@@ -512,6 +661,37 @@ def parse_args():
                         "mature pair entering test reset to IDLE and could never climb. Pure "
                         "init-source swap (no new param/state_dict key). Requires "
                         "--causal_confidence. Default OFF = byte-identical IDLE init.")
+    # ── SINGLE-VARIABLE DETACH PROBE (PM 2026-06-08, reviewer #1) ───────────────
+    # The ONE bit the panel asked to isolate from the B-vs-C confound: whether the
+    # link-prediction SCORE path (s_t1_pos→existence_decoder, + symmetric neg) carries
+    # gradient back into the backbone (csn/ectg/drgc) or is .detach()ed.
+    #   on  (default) = CANONICAL config-B: detach ON ⇒ backbone gets ZERO link-pred
+    #                   gradient (regularization-by-decoupling). BYTE-IDENTICAL to all
+    #                   prior config-B runs.
+    #   off           = remove the detach ONLY on the pos/neg scoring path ⇒ link-pred
+    #                   BCE trains the backbone end-to-end. enable_main_predictor STAYS
+    #                   off; EVERY other knob (lfg_mode/floor/lambda_edge_trans/entropy/
+    #                   kl/fsm_arch/decode/init) is IDENTICAL. The clean A/B that the
+    #                   old B-vs-C arm (which flipped MANY knobs at once) conflated.
+    p.add_argument("--detach_scorepath", choices=["on", "off"], default="on",
+                   help="link-pred score-path→backbone gradient: on=canonical detached "
+                        "config-B (default, byte-identical); off=un-detach the score "
+                        "path so link-pred BCE trains the backbone (single-variable "
+                        "decoupling probe). enable_main_predictor unchanged.")
+    # ── FREEZE-THEN-PROBE control (PM 2026-06-09, reviewer #1) ──────────────────
+    # The decisive novelty control: separate SR-GNN's "decoupling-by-construction"
+    # (backbone NEVER sees link-pred grad) from the classic "freeze-then-probe /
+    # linear-probing transfer" (train backbone WITH link-pred, FREEZE it, train a
+    # fresh head). --frozen_probe runs the FtP arm: PHASE-1 pretrain forces the e2e
+    # head on (backbone shaped by link-pred), PHASE-2 freezes backbone + trains a
+    # fresh head + measures inductive AP. Every other flag passes through unchanged
+    # so the ONLY diff vs config-B is the training protocol. Default OFF (no-op).
+    p.add_argument("--frozen_probe", action="store_true",
+                   help="freeze-then-probe control: pretrain e2e (backbone shaped by "
+                        "link-pred) → freeze backbone → train fresh link head → measure "
+                        "inductive AP. Forces enable_main_predictor on in PHASE-1.")
+    p.add_argument("--probe_epochs", type=int, default=None,
+                   help="epochs for the frozen-head PHASE-2 probe (default = --epochs).")
     p.add_argument("--out", default=os.path.join(V33_DIR, "results", "v3_3_benchmark.json"),
                    help="Output JSON path (runs + summary)")
     p.add_argument("--dump_dir", default=None,
@@ -572,6 +752,9 @@ def main():
                                 cc_C=args.cc_C, cc_thr=args.cc_thr,
                                 cc_self_consist_w=args.cc_self_consist_w,
                                 cc_grounded_init=args.cc_grounded_init,
+                                edge_h_detach_scorepath=(args.detach_scorepath == "on"),
+                                frozen_probe=args.frozen_probe,
+                                probe_epochs=args.probe_epochs,
                                 dump_dir=args.dump_dir)
                     results.append(r)
                     with open(out_path, "w") as f:

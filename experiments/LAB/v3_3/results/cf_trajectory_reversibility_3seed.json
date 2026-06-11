@@ -1,0 +1,91 @@
+{
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "source_npz": {
+    "42": "faithfulness_coedit_v3_hier_hv2_let0.5_s42_cbON.npz",
+    "1": "faithfulness_coedit_v3_hier_hv2_let0.5_s1_cbON.npz",
+    "7": "faithfulness_coedit_v3_hier_hv2_let0.5_s7_cbON.npz"
+  },
+  "per_seed": {
+    "42": {
+      "do_DEATH_frac_pedge_down": 1.0,
+      "do_DEATH_mean_delta_full_population": -0.5223708480395878,
+      "do_DEATH_mean_delta_recurring_subset": -0.3874070545562233,
+      "n_full": 12000,
+      "n_recurring": 9157,
+      "do_noop_delta": 0.0,
+      "reversibility_max_abs_delta_pedge_after_undo": 0.0,
+      "decay_to_reinforce_flip_frac": 1.0
+    },
+    "1": {
+      "do_DEATH_frac_pedge_down": 1.0,
+      "do_DEATH_mean_delta_full_population": -0.5208630930453911,
+      "do_DEATH_mean_delta_recurring_subset": -0.38265150351359745,
+      "n_full": 12000,
+      "n_recurring": 9157,
+      "do_noop_delta": 0.0,
+      "reversibility_max_abs_delta_pedge_after_undo": 0.0,
+      "decay_to_reinforce_flip_frac": 1.0
+    },
+    "7": {
+      "do_DEATH_frac_pedge_down": 1.0,
+      "do_DEATH_mean_delta_full_population": -0.5212839386009329,
+      "do_DEATH_mean_delta_recurring_subset": -0.3809077844010518,
+      "n_full": 12000,
+      "n_recurring": 9157,
+      "do_noop_delta": 0.0,
+      "reversibility_max_abs_delta_pedge_after_undo": 0.0,
+      "decay_to_reinforce_flip_frac": 0.9996474528468182
+    }
+  },
+  "summary": {
+    "do_DEATH_frac_down": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "do_DEATH_mean_delta_full_population": {
+      "mean": -0.5215059598953039,
+      "std": 0.0007780111644423029,
+      "per_seed": [
+        -0.5223708480395878,
+        -0.5208630930453911,
+        -0.5212839386009329
+      ]
+    },
+    "do_DEATH_mean_delta_recurring_subset": {
+      "mean": -0.38365544749029085,
+      "std": 0.0033639345666540694,
+      "per_seed": [
+        -0.3874070545562233,
+        -0.38265150351359745,
+        -0.3809077844010518
+      ]
+    },
+    "reversibility_max_abs_delta": {
+      "mean": 0.0,
+      "std": 0.0,
+      "per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "decay_to_reinforce_flip_frac": {
+      "mean": 0.9998824842822728,
+      "std": 0.00020354319379153773,
+      "per_seed": [
+        1.0,
+        1.0,
+        0.9996474528468182
+      ]
+    }
+  }
+}

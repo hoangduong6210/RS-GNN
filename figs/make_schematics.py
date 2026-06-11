@@ -1,5 +1,5 @@
 """
-SR-GNN v3.3 architecture SCHEMATICS (A1-A5). matplotlib Agg patches, dpi=240, English.
+RS-GNN v3.3 architecture SCHEMATICS (A1-A5). matplotlib Agg patches, dpi=240, English.
 Grounded in v3_3_ARCHITECTURE_CURRENT.md + fsm_head.py (CAUSAL_RULE_MATRIX / hier tree).
 NO fabricated blocks: every box maps to a real module/flag. NO data numbers invented.
 QA: no text overlap, no missing glyph (DejaVu Sans covers lambda/phi/arrows), boxes/arrows clear.
@@ -57,13 +57,13 @@ def base_ax(figsize, xlim=(0, 16), ylim=(0, 9)):
     return fig, ax
 
 
-# ===================================================== A1 — Two-stream + DETACH wall
+# ===================================================== A1 - Two-stream + DETACH wall
 def a1():
     fig, ax = base_ax((15.5, 6.4), (0, 100), (0, 42))
-    ax.set_title("A1  Two-stream SR-GNN v3.3:  detached FSM readout (config B)",
+    ax.set_title("A1  Two-stream RS-GNN v3.3:  detached FSM readout (config B)",
                  fontsize=13.5, fontweight="bold", pad=8)
     y = 22; h = 6
-    # backbone (stream A) — left half, one colour
+    # backbone (stream A) - left half, one colour
     b_event = box(ax, 1, y, 8, h, "EVENT\n(src,dst,t,feat)", NEUTRAL, "#888", fs=9.5)
     b_csn   = box(ax, 11, y, 9, h, "CSN\n(ResidualCSN)", BACK, BACK_E, fs=9.5)
     b_ectg  = box(ax, 22, y, 14.5, h,
@@ -74,7 +74,7 @@ def a1():
     arrow(ax, R(b_csn), L(b_ectg), BACK_E)
     arrow(ax, R(b_ectg), L(b_drgc), BACK_E)
 
-    # DETACH wall — placed right AFTER edge_h (hatched barrier)
+    # DETACH wall - placed right AFTER edge_h (hatched barrier)
     xw = 50.5
     wall = Rectangle((xw-0.7, 4), 1.4, 34, facecolor="#f2c9c2", edgecolor="#c0392b",
                      hatch="////", lw=2.2, zorder=4)
@@ -88,7 +88,8 @@ def a1():
     arrow(ax, R(b_drgc), (xw-0.7, y+h/2), BACK_E)
     arrow(ax, (xw+0.7, y+h/2), (53, y+h/2), FSM_E)
     ax.text(xw, y+h+0.6, "forward: edge_h value passes", ha="center", va="bottom",
-            fontsize=8.2, color="#555", style="italic")
+            fontsize=8.2, color="#555", style="italic", zorder=7,
+            bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="none", alpha=0.92))
     # GRADIENT-BLOCK: link-pred grad travels back and is stopped at the wall (X)
     yg = y - 4.2
     ax.annotate("", xy=(xw+1.0, yg), xytext=(60, yg),
@@ -99,7 +100,7 @@ def a1():
     ax.text(61, yg, "link-pred gradient (blocked)", ha="left", va="center",
             fontsize=8.4, color=SCORE_E, fontweight="bold")
 
-    # FSM stream (stream B) — right of wall, different colour
+    # FSM stream (stream B) - right of wall, different colour
     b_so  = box(ax, 53, y, 11, h, "StateObserver\n$s_t$ over 5 states", FSM, FSM_E, fs=9.2)
     b_tp  = box(ax, 66.5, y, 14, h,
                 "TransitionPredictor\n$T_{uv}=W+g(\\phi)$", FSM, FSM_E, fs=9.2)
@@ -127,13 +128,14 @@ def a1():
     ax.legend(handles=leg, loc="lower left", bbox_to_anchor=(0.005, -0.02),
               frameon=False, fontsize=8.6, ncol=2)
     ax.text(50.5, 8.8, "backbone: 0 link-pred grad  $\\Rightarrow$  inductive generalisation",
-            ha="center", va="bottom", fontsize=9.4, style="italic", color="#333")
+            ha="center", va="bottom", fontsize=9.4, style="italic", color="#333", zorder=7,
+            bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.92))
     fig.tight_layout()
     p = f"{OUT}/A1_two_stream_detach.png"; fig.savefig(p, dpi=DPI, bbox_inches="tight"); plt.close(fig)
     print("A1 ->", p)
 
 
-# ===================================================== A2 — Gradient routing LITERAL
+# ===================================================== A2 - Gradient routing LITERAL
 def a2():
     # LITERAL physics (v3_3_ARCHITECTURE_CURRENT.md §6, CPU-proven 0/56):
     #   detach wall sits BETWEEN backbone (LEFT) and FSM stream (RIGHT).
@@ -159,7 +161,7 @@ def a2():
             fontsize=9.0, style="italic", color=BACK_E)
 
     # ----- RIGHT of wall: stream-B modules, each with its OWN loss feeding it -----
-    # (target module, its loss text, edge colour, y) — three blocked rows, well spaced
+    # (target module, its loss text, edge colour, y) - three blocked rows, well spaced
     rows = [
         ("FSM head ($s_{t1}$ pos)",         "BCE  (link-pred)",             SCORE_E,  FSM,     44),
         ("Hier heads (birth/alive/rising)", "edge_trans CE  (de-collapse)", INTERP_E, INTERP,  28),
@@ -207,7 +209,7 @@ def a2():
     print("A2 ->", p)
 
 
-# ===================================================== A3 — Hierarchical decode tree
+# ===================================================== A3 - Hierarchical decode tree
 def a3():
     fig, ax = base_ax((12.5, 7.2), (0, 100), (0, 64))
     ax.set_title("A3  Hierarchical decode of $s_{t1}$cal:  DECAY can win argmax",
@@ -257,7 +259,7 @@ def a3():
     print("A3 ->", p)
 
 
-# ===================================================== A4 — Lifecycle FSM (band-5 admissibility)
+# ===================================================== A4 - Lifecycle FSM (band-5 admissibility)
 def a4():
     fig, ax = base_ax((13.0, 6.0), (0, 100), (0, 40))
     ax.set_title("A4  Lifecycle FSM (CAUSAL_RULE_MATRIX, band-5):  single-rung moves only",
@@ -299,7 +301,7 @@ def a4():
     print("A4 ->", p)
 
 
-# ===================================================== A5 — Causal-confidence overlay (advisory)
+# ===================================================== A5 - Causal-confidence overlay (advisory)
 def a5():
     fig, ax = base_ax((13.5, 6.2), (0, 100), (0, 44))
     ax.set_title("A5  WC-CONF causal-confidence overlay:  advisory, never bends prediction",

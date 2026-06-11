@@ -1,0 +1,171 @@
+{
+  "source_npz_hier": {
+    "42": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s42_cbON.npz",
+    "1": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s1_cbON.npz",
+    "7": "results/faithfulness_coedit_v3_hier_hv2_let0.5_s7_cbON.npz"
+  },
+  "source_npz_flat": {
+    "42": "results/faithfulness_coedit_v3_flat_let0.5_s42.npz",
+    "1": "results/faithfulness_coedit_v3_flat_let0.5_s1.npz",
+    "7": "results/faithfulness_coedit_v3_flat_let0.5_s7.npz"
+  },
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "method": "offline HierV2SCM over config-B cbON npz; EXISTENCE_W is the init-equivalent softplus(theta) target (trained theta NOT serialized; ordering/sign exact, magnitudes ordinal)",
+  "existence_readout_onehot_ladder": {
+    "IDLE": 0.1,
+    "BIRTH": 1.0,
+    "REINFORCE": 1.0,
+    "DECAY": 0.3,
+    "DEATH": 0.0
+  },
+  "ladder_ordering": "DEATH(0.0) < IDLE(0.1) < DECAY(0.3) < BIRTH=REINFORCE(1.0)",
+  "per_seed": {
+    "42": {
+      "do_REINFORCE_frac_pedge_up": 1.0,
+      "do_BIRTH_frac_pedge_up": 1.0,
+      "do_DEATH_frac_pedge_down": 1.0,
+      "dose_rate_to_REINFORCE_slope": 0.016718009765875202,
+      "dose_rate_to_DEATH_slope": -0.05697746391836068,
+      "dose_slope_to_REINFORCE_slope": 0.28539036849113014,
+      "dose_trueocc_to_BIRTH_slope": -0.00435847652898839,
+      "hier_DECAY_argmax_frac": 0.47808333333333336,
+      "hier_DECAY_argmax_count": 5737,
+      "flat_DECAY_argmax_frac": 0.0004166666666666667,
+      "flat_DECAY_argmax_count": 5,
+      "n": 12000,
+      "n_recurring": 9157,
+      "spearman_pdecaycal_sloperel_rho": -0.5948685632180097,
+      "spearman_pdecaycal_sloperel_p": 0.0
+    },
+    "1": {
+      "do_REINFORCE_frac_pedge_up": 1.0,
+      "do_BIRTH_frac_pedge_up": 1.0,
+      "do_DEATH_frac_pedge_down": 1.0,
+      "dose_rate_to_REINFORCE_slope": 0.01673726645719249,
+      "dose_rate_to_DEATH_slope": -0.05725869418625189,
+      "dose_slope_to_REINFORCE_slope": 0.2883492461211447,
+      "dose_trueocc_to_BIRTH_slope": -0.004267710937868305,
+      "hier_DECAY_argmax_frac": 0.48033333333333333,
+      "hier_DECAY_argmax_count": 5764,
+      "flat_DECAY_argmax_frac": 0.0,
+      "flat_DECAY_argmax_count": 0,
+      "n": 12000,
+      "n_recurring": 9157,
+      "spearman_pdecaycal_sloperel_rho": -0.6061223463870232,
+      "spearman_pdecaycal_sloperel_p": 0.0
+    },
+    "7": {
+      "do_REINFORCE_frac_pedge_up": 1.0,
+      "do_BIRTH_frac_pedge_up": 1.0,
+      "do_DEATH_frac_pedge_down": 1.0,
+      "dose_rate_to_REINFORCE_slope": 0.01675296569915641,
+      "dose_rate_to_DEATH_slope": -0.057984816630635004,
+      "dose_slope_to_REINFORCE_slope": 0.2794664306498689,
+      "dose_trueocc_to_BIRTH_slope": -0.004188921819725216,
+      "hier_DECAY_argmax_frac": 0.47275,
+      "hier_DECAY_argmax_count": 5673,
+      "flat_DECAY_argmax_frac": 0.005,
+      "flat_DECAY_argmax_count": 60,
+      "n": 12000,
+      "n_recurring": 9157,
+      "spearman_pdecaycal_sloperel_rho": -0.6420708023035139,
+      "spearman_pdecaycal_sloperel_p": 0.0
+    }
+  },
+  "summary": {
+    "do_REINFORCE_frac_pedge_up": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "do_BIRTH_frac_pedge_up": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "do_DEATH_frac_pedge_down": {
+      "mean": 1.0,
+      "std": 0.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "dose_rate_to_REINFORCE_slope": {
+      "mean": 0.016736080640741367,
+      "std": 1.750811064569493e-05,
+      "per_seed": [
+        0.016718009765875202,
+        0.01673726645719249,
+        0.01675296569915641
+      ]
+    },
+    "dose_rate_to_DEATH_slope": {
+      "mean": -0.05740699157841586,
+      "std": 0.0005197922268787652,
+      "per_seed": [
+        -0.05697746391836068,
+        -0.05725869418625189,
+        -0.057984816630635004
+      ]
+    },
+    "dose_slope_to_REINFORCE_slope": {
+      "mean": 0.2844020150873812,
+      "std": 0.004523133262707458,
+      "per_seed": [
+        0.28539036849113014,
+        0.2883492461211447,
+        0.2794664306498689
+      ]
+    },
+    "dose_trueocc_to_BIRTH_slope": {
+      "mean": -0.004271703095527303,
+      "std": 8.484782171871348e-05,
+      "per_seed": [
+        -0.00435847652898839,
+        -0.004267710937868305,
+        -0.004188921819725216
+      ]
+    },
+    "hier_DECAY_argmax_frac": {
+      "mean": 0.47705555555555557,
+      "std": 0.003894737665296791,
+      "per_seed": [
+        0.47808333333333336,
+        0.48033333333333333,
+        0.47275
+      ]
+    },
+    "flat_DECAY_argmax_frac": {
+      "mean": 0.0018055555555555557,
+      "std": 0.002774303382699747,
+      "per_seed": [
+        0.0004166666666666667,
+        0.0,
+        0.005
+      ]
+    },
+    "spearman_pdecaycal_sloperel_rho": {
+      "mean": -0.6143539039695156,
+      "std": 0.024654244033161705,
+      "per_seed": [
+        -0.5948685632180097,
+        -0.6061223463870232,
+        -0.6420708023035139
+      ]
+    }
+  }
+}

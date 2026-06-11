@@ -113,13 +113,17 @@ def _decode_tree(p_birth, p_alive, p_rising):
     return P / P.sum(1, keepdims=True).clip(min=1e-8)
 
 
-def p_edge(state_dist):
+def p_edge(state_dist, w=None):
     """Push a next-state distribution through the REAL existence readout.
 
     Mirrors ExistenceDecoder.forward: p = w·dist, logit = log(p/(1−p)).
-    Returns (p_edge_prob, existence_logit).
+    w (default None ⇒ EXISTENCE_W, the hardcoded INIT spec): pass the per-seed
+    TRAINED weights softplus(existence_decoder.theta) to test whether the do(state)
+    ladder survives training (reviewer tautology #4 — the init order must not be the
+    sole reason DEATH<IDLE<DECAY<REINF=BIRTH holds). Returns (p_edge_prob, logit).
     """
-    p = (state_dist * EXISTENCE_W[None, :]).sum(1)
+    w_eff = EXISTENCE_W if w is None else np.asarray(w, dtype=np.float64)
+    p = (state_dist * w_eff[None, :]).sum(1)
     pc = np.clip(p, 1e-6, 1 - 1e-6)
     return p, np.log(pc / (1.0 - pc))
 
@@ -184,8 +188,10 @@ class HierV2SCM:
                       + r_rising)
         return pb, pa, pr
 
-    def baseline(self, idx=None):
-        """Re-decode at the OBSERVED drivers. Returns dict with state dist + gates."""
+    def baseline(self, idx=None, w=None):
+        """Re-decode at the OBSERVED drivers. Returns dict with state dist + gates.
+        w (default None ⇒ init EXISTENCE_W) lets the caller push the SAME baseline
+        dist through the per-seed TRAINED existence weights for the do(state) test."""
         sl = slice(None) if idx is None else idx
         pb, pa, pr = self._gates(self.true_occ[sl], self.n_prior[sl],
                                  self.rate_ratio[sl], self.slope_rel[sl],
@@ -193,7 +199,7 @@ class HierV2SCM:
                                  self.r_birth[sl], self.r_alive[sl],
                                  self.r_rising[sl])
         dist = _decode_tree(pb, pa, pr)
-        pe, _ = p_edge(dist)
+        pe, _ = p_edge(dist, w=w)
         return dict(dist=dist, p_birth=pb, p_alive=pa, p_rising=pr, p_edge=pe)
 
     def do_driver(self, idx=None, *, true_occ=None, n_prior=None,
@@ -235,9 +241,12 @@ class HierV2SCM:
         pe, _ = p_edge(dist)
         return dict(dist=dist, p_birth=pb, p_alive=pa, p_rising=pr, p_edge=pe)
 
-    def do_state(self, idx=None, *, state):
+    def do_state(self, idx=None, *, state, w=None):
         """do(state=X) → force one-hot next-state, push through REAL existence
         readout. `state` is an int (BIRTH/.../DEATH) or one of STATE_NAMES.
+        w (default None ⇒ init EXISTENCE_W): pass per-seed TRAINED softplus(theta)
+        to test whether the do(state) ladder DEATH<IDLE<DECAY<REINF=BIRTH survives
+        training (NOT just the hardcoded init order — reviewer tautology #4).
         Returns P(edge) under the forced state vs baseline."""
         if isinstance(state, str):
             state = STATE_NAMES.index(state.upper())
@@ -245,8 +254,8 @@ class HierV2SCM:
         n = len(np.atleast_1d(self.true_occ[sl]))
         forced = np.zeros((n, 5), dtype=np.float64)
         forced[:, state] = 1.0
-        pe_forced, logit_forced = p_edge(forced)
-        base = self.baseline(idx)
+        pe_forced, logit_forced = p_edge(forced, w=w)
+        base = self.baseline(idx, w=w)
         return dict(state=STATE_NAMES[state],
                     p_edge_forced=pe_forced, p_edge_base=base["p_edge"],
                     delta=pe_forced - base["p_edge"])

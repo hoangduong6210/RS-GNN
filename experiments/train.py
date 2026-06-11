@@ -156,7 +156,8 @@ def build_model(name: str, num_nodes: int, feat_dim: int, hidden: int):
 
 def run_epoch(model, split_data, num_nodes, batch_size, optimizer=None,
               inductive_nodes=None, seen_nodes=None, desc="train",
-              het_collector=None, score_collector=None):
+              het_collector=None, score_collector=None,
+              neg_strategy="random", hist_neg_ctx=None):
     """
     Run one epoch of training or evaluation.
 
@@ -225,10 +226,45 @@ def run_epoch(model, split_data, num_nodes, batch_size, optimizer=None,
             t    = torch.tensor(t_all[idx],    dtype=torch.float, device=DEVICE)
             feat = torch.tensor(feat_all[idx], dtype=torch.float, device=DEVICE)
 
-            # Fair neg sampling for inductive eval:
-            # neg comes from same pool as pos dst (seen→seen, ind→ind)
-            if ind_set_for_neg is not None and seen_set_for_neg is not None:
-                batch_dst = dst_all[idx]
+            # ── Negative sampling ────────────────────────────────────────────
+            # neg_strategy:
+            #   "random"     : fair pool-matched random (seen→seen, ind→ind) — the
+            #                  harness default (Table 3 reference numbers).
+            #   "historical" : Poursafaei et al. (2022) historical NS — sample neg dst
+            #                  from the pool of destinations SEEN in TRAIN edges but NOT
+            #                  present at the current eval timestamp (i.e. a node-pair
+            #                  that existed historically and is absent now). Hard because
+            #                  the negative is a plausible past partner, not a random node.
+            #   "inductive"  : Poursafaei inductive NS — neg dst sampled from the pool
+            #                  of destinations of TEST-PHASE-ONLY edges, i.e. (src,dst)
+            #                  pairs observed during test but NEVER present in train.
+            #                  This is about test-phase edges, NOT unseen nodes.
+            # hist_neg_ctx (built once per run, passed in) carries:
+            #   "hist_dst_pool"     : np.int64[] train destination multiset (historical)
+            #   "hist_dst_pool_ind" : np.int64[] destinations of test-phase-only edges
+            #   "active_pos_set"    : set of (src,dst) positive pairs at THIS eval split
+            #                         (used to reject a sampled neg that is actually a
+            #                          current positive — keeps the negative truly absent)
+            batch_dst = dst_all[idx]
+            batch_src = src_all[idx]
+            if neg_strategy in ("historical", "inductive") and hist_neg_ctx is not None:
+                if neg_strategy == "inductive":
+                    pool = hist_neg_ctx["hist_dst_pool_ind"]
+                else:
+                    pool = hist_neg_ctx["hist_dst_pool"]
+                active_pos = hist_neg_ctx["active_pos_set"]
+                neg_dst_np = np.zeros(len(batch_dst), dtype=np.int64)
+                for bi in range(len(batch_dst)):
+                    s = int(batch_src[bi]); d = int(batch_dst[bi])
+                    nd = int(np.random.choice(pool))
+                    tries = 0
+                    # reject if equal to the true dst OR if (s,nd) is itself a current
+                    # positive (would make the "negative" a real present edge).
+                    while (nd == d or (s, nd) in active_pos) and tries < 20:
+                        nd = int(np.random.choice(pool)); tries += 1
+                    neg_dst_np[bi] = nd
+            elif ind_set_for_neg is not None and seen_set_for_neg is not None:
+                # Fair random neg for inductive eval: same pool as pos dst.
                 neg_dst_np = np.zeros(len(batch_dst), dtype=np.int64)
                 for bi, d in enumerate(batch_dst):
                     if int(d) in ind_set_for_neg:

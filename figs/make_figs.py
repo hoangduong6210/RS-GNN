@@ -1,7 +1,7 @@
 """
-SR-GNN ED02 publication figures (Figs 1-5). All numbers traced to JSON/npz on disk.
+RS-GNN ED02 publication figures (Figs 1-5). All numbers traced to JSON/npz on disk.
 matplotlib Agg, dpi>=220, English. Run: python3 make_figs.py
-Author: DATA team. NO fabricated numbers — every value loaded/aggregated from source files.
+Author: DATA team. NO fabricated numbers - every value loaded/aggregated from source files.
 """
 import json, glob, os
 import numpy as np
@@ -23,7 +23,7 @@ plt.rcParams.update({
     "figure.facecolor": "white", "axes.facecolor": "white",
 })
 
-SR_BLUE   = "#1f4e8c"   # SR-GNN(B) highlight
+SR_BLUE   = "#1f4e8c"   # RS-GNN(B) highlight
 SR_LIGHT  = "#7fa8d8"   # canonical-A
 GREY      = "#b8b8b8"   # baselines
 
@@ -41,13 +41,13 @@ def agg_baselines(fn, key):
         out[m] = (float(np.mean(vs)), float(np.std(vs)), len(vs))
     return out
 
-# ============================================================ FIG 1 — CoEdit headline
+# ============================================================ FIG 1 - CoEdit headline
 def fig1():
     b_m, b_s, _ = agg_runs(f"{RES}/v3_3_coedit_ARM_B_publishable_3seed.json", "ind_ap")
     a_m, a_s, _ = agg_runs(f"{RES}/v3_3_coedit_ARM_A_canonical_3seed.json", "ind_ap")
     bl = agg_baselines(f"{BASE}/baselines_coedit_Bprotocol.json", "ind_ap")
-    rows = [("SR-GNN (B)", b_m, b_s, "B"),
-            ("SR-GNN (canonical-A)", a_m, a_s, "A")]
+    rows = [("RS-GNN (B)", b_m, b_s, "B"),
+            ("RS-GNN (canonical-A)", a_m, a_s, "A")]
     for m, (mu, sd, _) in bl.items():
         rows.append((m.upper() if m != "graphmixer" else "GraphMixer", mu, sd, "base"))
     rows.sort(key=lambda r: r[1], reverse=True)
@@ -73,7 +73,7 @@ def fig1():
     ax.set_title("Inductive link prediction on CoEdit  (3-seed mean ± std)", fontweight="bold")
 
     # annotate +gap vs best baseline
-    bi = labels.index("SR-GNN (B)")
+    bi = labels.index("RS-GNN (B)")
     bbi = labels.index(best_base[0].upper() if best_base[0] != "graphmixer" else "GraphMixer")
     yb = b_m + b_s + 0.045
     ax.annotate("", xy=(bi, yb), xytext=(bbi, yb),
@@ -81,8 +81,8 @@ def fig1():
     ax.text((bi + bbi) / 2, yb + 0.006, f"+{gap:.1f} pp vs best baseline ({best_base[0].upper()})",
             ha="center", va="bottom", color="#c0392b", fontsize=10.5, fontweight="bold")
 
-    handles = [Patch(facecolor=SR_BLUE, edgecolor="black", label="SR-GNN (B, decoupled)"),
-               Patch(facecolor=SR_LIGHT, edgecolor="black", label="SR-GNN (canonical-A)"),
+    handles = [Patch(facecolor=SR_BLUE, edgecolor="black", label="RS-GNN (B, decoupled)"),
+               Patch(facecolor=SR_LIGHT, edgecolor="black", label="RS-GNN (canonical-A)"),
                Patch(facecolor=GREY, edgecolor="black", label="TGN-family baselines")]
     ax.legend(handles=handles, loc="upper right", frameon=True, framealpha=0.92,
               edgecolor="#bbb", fontsize=9.5)
@@ -90,7 +90,7 @@ def fig1():
     p = f"{OUT}/fig1_coedit_headline.png"; fig.savefig(p, dpi=DPI, bbox_inches="tight"); plt.close(fig)
     print(f"FIG1 -> {p}  | B={b_m:.4f}±{b_s:.4f} bestbase={best_base[0]}={best_base[1]:.4f} gap=+{gap:.2f}pp")
 
-# ============================================================ FIG 2 — decoupling mechanism (3-seed)
+# ============================================================ FIG 2 - decoupling mechanism (3-seed)
 def fig2():
     # 3-seed aggregates; sample (n-1) std to match paper convention.
     def agg3(fn):
@@ -117,7 +117,7 @@ def fig2():
     ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=10)
     ax.set_ylabel("Inductive Average Precision (CoEdit)")
     ax.set_ylim(0.0, 1.24)
-    ax.set_title("Decoupling ablation — CoEdit inductive AP (3-seed mean$\\pm$std)",
+    ax.set_title("Decoupling ablation - CoEdit inductive AP (3-seed mean$\\pm$std)",
                  fontweight="bold", pad=10)
     gap = (B_m - C_m) * 100
     # B-vs-C gap arrow placed ABOVE the bar value labels (no collision)
@@ -130,46 +130,51 @@ def fig2():
     print(f"FIG2 -> {p}  | B={B_m:.4f}±{B_s:.4f} C={C_m:.4f}±{C_s:.4f} "
           f"A={A_m:.4f}±{A_s:.4f}  gapBC=+{gap:.2f}pp  n={nB}/{nC}/{nA}")
 
-# ============================================================ FIG 3 — counterfactual ladder
+# ============================================================ FIG 3 - counterfactual ladder
 def fig3():
-    import sys
-    sys.path.insert(0, f"{ROOT}/experiments/LAB/v3_3")
-    import fsm_intervene as fimod
-    npz = f"{LAB}/faithfulness_coedit_v3_hier_hv2_let0.5_s42_cbON.npz"
-    scm = fimod.HierV2SCM(npz)
-    base = scm.baseline()["p_edge"].mean()
-    order = ["DEATH", "IDLE", "DECAY", "REINFORCE", "BIRTH"]
-    pe = {s: scm.do_state(state=s)["p_edge_forced"].mean() for s in order}
-    # ladder x-axis: strictly monotone forced-state existence intent
-    xs = ["do(DEATH)", "do(IDLE)", "do(DECAY)", "do(REINFORCE)\n= do(BIRTH)"]
-    ys = [pe["DEATH"], pe["IDLE"], pe["DECAY"], pe["REINFORCE"]]
-    cols = ["#c0392b", "#e08e3c", "#3c8ee0", "#2e8b57"]
-    fig, ax = plt.subplots(figsize=(7.6, 4.8))
-    x = np.arange(len(xs))
-    ax.plot(x, ys, "-o", color=SR_BLUE, lw=2.2, ms=9, zorder=3)
-    for i, (v, c) in enumerate(zip(ys, cols)):
-        ax.scatter(x[i], v, s=130, color=c, edgecolor="black", zorder=4)
-        ax.text(x[i], v + 0.045, f"{v:.2f}", ha="center", fontsize=10.5, fontweight="bold")
-    # baseline (observed, un-intervened) as a reference band, NOT a ladder point
-    ax.axhline(base, color="grey", ls="--", lw=1.3, alpha=0.85)
-    ax.text(len(xs) - 1, base + 0.012, f"observed baseline = {base:.2f}",
-            ha="right", va="bottom", color="#555", fontsize=9.5)
-    ax.set_xticks(x); ax.set_xticklabels(xs, fontsize=9.5)
-    ax.set_xlim(-0.4, len(xs) - 0.6)
-    ax.set_ylabel("Counterfactual mean P(edge)")
-    ax.set_ylim(-0.08, 1.12)
-    ax.set_title("Existence counterfactual ladder:  do(force state) -> P(edge)\n"
-                 "CoEdit, N=12000 pairs (config B, cbON)", fontweight="bold", fontsize=12)
-    ax.text(0.02, 0.88, "monotone & exact:\nDEATH < IDLE < DECAY < REINFORCE=BIRTH\n"
-            "do(DEATH): P(edge) down for 100% of pairs",
-            transform=ax.transAxes, fontsize=9.0, va="top",
-            bbox=dict(boxstyle="round", fc="#f4f4f4", ec="grey"))
+    # TRAINED existence-intent ladder vs the init-equivalent prior.
+    # Reviewer W6: the earlier ladder plotted init-equivalent constants (REINFORCE=BIRTH
+    # tie). This plots the TRAINED weights w=softplus(theta), 3-seed mean+/-std, and
+    # shows training BREAKS the init tie. Every value from cf_trained_theta_3seed.json.
+    d = json.load(open(f"{RES}/cf_trained_theta_3seed.json"))
+    order = d["states_ladder_order"]            # DEATH, IDLE, DECAY, REINFORCE, BIRTH
+    seeds = [str(s) for s in d["seeds"]]
+    ps = d["per_seed"]
+    tr_mean = [float(np.mean([ps[s]["p_edge_trained"][st] for s in seeds])) for st in order]
+    tr_std  = [float(np.std ([ps[s]["p_edge_trained"][st] for s in seeds])) for st in order]
+    init    = [ps[seeds[0]]["p_edge_init"][st] for st in order]
+    dRB     = [ps[s]["ladder_detail_trained"]["|REINF-BIRTH|"] for s in seeds]
+    x = np.arange(len(order))
+    fig, ax = plt.subplots(figsize=(7.8, 5.0))
+    # init-equivalent prior (architectural reference; this is what the old figure showed)
+    ax.plot(x, init, "--o", color=GREY, lw=1.8, ms=8, mfc="white", zorder=2,
+            label="init-equivalent prior (architectural; REINFORCE=BIRTH)")
+    # trained mean +/- std
+    ax.errorbar(x, tr_mean, yerr=tr_std, fmt="-o", color=SR_BLUE, lw=2.4, ms=9,
+                capsize=4, zorder=3, label="trained $w=\\mathrm{softplus}(\\theta)$ (3-seed mean$\\pm$std)")
+    for i, (m, sd) in enumerate(zip(tr_mean, tr_std)):
+        ax.text(x[i], m + sd + 0.05, f"{m:.2f}", ha="center", fontsize=10,
+                fontweight="bold", color=SR_BLUE)
+    ax.set_xticks(x); ax.set_xticklabels(order, fontsize=10.5)
+    ax.set_xlim(-0.4, len(order) - 0.6)
+    ax.set_ylabel("Existence intent  $w=\\mathrm{softplus}(\\theta)$")
+    ax.set_ylim(-0.08, 1.66)
+    ax.set_title("Trained existence-intent ladder vs init-equivalent prior\n"
+                 "CoEdit, 3 seeds {42,1,7}, config B", fontweight="bold", fontsize=12.5)
+    ax.text(0.025, 0.965,
+            "Init ties REINFORCE = BIRTH.\n"
+            "Training BREAKS the tie:\n"
+            "REINFORCE > BIRTH (all 3 seeds,\n"
+            f"$|\\Delta w|$ = {dRB[0]:.2f} / {dRB[1]:.2f} / {dRB[2]:.2f}).\n"
+            "Order DEATH < IDLE < DECAY\n< {BIRTH, REINFORCE} per seed.",
+            transform=ax.transAxes, fontsize=8.6, va="top", linespacing=1.35,
+            bbox=dict(boxstyle="round", fc="#eef4fb", ec=SR_BLUE, alpha=0.95))
+    ax.legend(loc="lower right", fontsize=8.8, frameon=False)
     fig.tight_layout()
     p = f"{OUT}/fig3_counterfactual_ladder.png"; fig.savefig(p, dpi=DPI); plt.close(fig)
-    print(f"FIG3 -> {p}  | base={base:.4f} DEATH={pe['DEATH']:.3f} IDLE={pe['IDLE']:.3f} "
-          f"DECAY={pe['DECAY']:.3f} REINF={pe['REINFORCE']:.3f} BIRTH={pe['BIRTH']:.3f}")
+    print(f"FIG3(trained) -> {p} | trained={[round(m,3) for m in tr_mean]} init={init}")
 
-# ============================================================ FIG 4 — cross-dataset summary
+# ============================================================ FIG 4 - cross-dataset summary
 def fig4():
     datasets = ["coedit", "wikipedia", "mooc"]
     fnmap = {
@@ -193,10 +198,10 @@ def fig4():
     bbt = [data[d]["bb_t"][1][0] for d in datasets]; bbt_e = [data[d]["bb_t"][1][1] for d in datasets]
     bbi = [data[d]["bb_i"][1][0] for d in datasets]; bbi_e = [data[d]["bb_i"][1][1] for d in datasets]
 
-    ax.bar(x - 1.5*w, srt, w, yerr=srt_e, capsize=3, color=SR_BLUE, edgecolor="black", lw=0.6, label="SR-GNN (B) — transductive")
-    ax.bar(x - 0.5*w, sri, w, yerr=sri_e, capsize=3, color=SR_LIGHT, edgecolor="black", lw=0.6, label="SR-GNN (B) — inductive")
-    ax.bar(x + 0.5*w, bbt, w, yerr=bbt_e, capsize=3, color="#6f6f6f", edgecolor="black", lw=0.6, label="best baseline — transductive")
-    ax.bar(x + 1.5*w, bbi, w, yerr=bbi_e, capsize=3, color=GREY, edgecolor="black", lw=0.6, label="best baseline — inductive")
+    ax.bar(x - 1.5*w, srt, w, yerr=srt_e, capsize=3, color=SR_BLUE, edgecolor="black", lw=0.6, label="RS-GNN (B) - transductive")
+    ax.bar(x - 0.5*w, sri, w, yerr=sri_e, capsize=3, color=SR_LIGHT, edgecolor="black", lw=0.6, label="RS-GNN (B) - inductive")
+    ax.bar(x + 0.5*w, bbt, w, yerr=bbt_e, capsize=3, color="#6f6f6f", edgecolor="black", lw=0.6, label="best baseline - transductive")
+    ax.bar(x + 1.5*w, bbi, w, yerr=bbi_e, capsize=3, color=GREY, edgecolor="black", lw=0.6, label="best baseline - inductive")
 
     # baseline model name centered ABOVE each grey bar (+ its errorbar cap), horizontal,
     # small offset so it never strikes the cap or the neighbour bar
@@ -211,7 +216,7 @@ def fig4():
     ax.set_xticks(x); ax.set_xticklabels(["CoEdit", "Wikipedia", "MOOC"])
     ax.set_ylabel("Average Precision")
     ax.set_ylim(0.55, 1.12)
-    ax.set_title("SR-GNN (B) vs best per-dataset baseline  (3-seed mean " + r"$\pm$" + " std)",
+    ax.set_title("RS-GNN (B) vs best per-dataset baseline  (3-seed mean " + r"$\pm$" + " std)",
                  fontweight="bold", pad=10)
     # legend pulled to upper-left interior where bars are short; em-dash kept (DejaVu OK)
     ax.legend(loc="lower center", ncol=2, frameon=True, framealpha=0.9, fontsize=8.8,
@@ -223,7 +228,7 @@ def fig4():
               f"ind={data[d]['bb_i'][0]}={data[d]['bb_i'][1][0]:.4f}")
     print(f"FIG4 -> {p}")
 
-# ============================================================ FIG 5 — causal-coherence (advisory)
+# ============================================================ FIG 5 - causal-coherence (advisory)
 def fig5():
     coh, vio = [], []
     for f in sorted(glob.glob(f"{ROOT}/experiments/LAB/v3_3/results/wc_grnd/wc_conf_calib_grnd_coedit_s*_summary.json")):
