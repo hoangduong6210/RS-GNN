@@ -227,7 +227,7 @@ We walked back every claim that did not survive a multi-seed or controlled test:
 - An **identical-head** K1 variant (same MLP scored detached vs coupled) for the cleanest toggle.
 - A **per-novelty-bin** identity probe within the inductive split.
 - Finalize **MOOC DyGFormer** + add **TCL/NAT**, or keep the frontier comparison downscoped.
-- **Globalize** the per-pair readout: a normalized-dynamics space with a domain-adaptive driver basis + cross-pair spillover (design-staged in `PERPAIR_GLOBALIZATION_DESIGN.md`).
+- **Globalize** the per-pair readout: a normalized-dynamics space with a domain-adaptive driver basis + cross-pair spillover (design-staged future work).
 
 ---
 

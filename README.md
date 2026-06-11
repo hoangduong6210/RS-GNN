@@ -39,4 +39,4 @@ target an Ascend `nextgen` SLURM partition with a CUDA 12.4 environment.
 The decoupling mechanism (Contribution 1) is a general training principle, shown across CoEdit / Wikipedia /
 MOOC. The per-pair causal lifecycle readout (Contribution 2) is **CoEdit-scoped by design** - lifecycle
 dynamics are driven by non-commensurable, domain-specific quantities, so a faithful intervene-able readout
-must specialize per dataset; globalization is principled future work (see `PERPAIR_GLOBALIZATION_DESIGN.md`).
+must specialize per dataset; globalization is principled future work.
